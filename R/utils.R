@@ -3,6 +3,9 @@ if ((getRversion()) < "3.2.1") {
     lengths <- function (x, use.names = TRUE) vapply(x, length, 1L, USE.NAMES = use.names)
 }
 
+#' @importFrom methods is
+#' @importFrom stats as.formula formula reformulate setNames terms update
+
 if (getRversion() < "4.0.0") {
     deparse1 <- function (expr, collapse = " ", width.cutoff = 500L, ...) {
         paste(deparse(expr, width.cutoff, ...), collapse = collapse)
@@ -138,6 +141,21 @@ addForm <- function(...) {
   Reduce(addForm0,list(...))
 }
 
+## FIXME: find a way to implement this in a robust/platform-friendly way
+## (copied from glmmTMB R/enum.R)
+.valid_covstruct <- c(
+  diag = 0,
+  us   = 1,
+  cs   = 2,
+  ar1  = 3,
+  ou   = 4,
+  exp = 5,
+  gau = 6,
+  mat = 7,
+  toep = 8,
+  rr = 9
+)
+
 #' list of specials -- taken from enum.R
 findReTrmClasses <- function() {
     names(.valid_covstruct)
@@ -172,7 +190,7 @@ expandGrpVar <- function(f) {
 ##' random effect terms
 ##' @param bb a list of naked grouping variables, i.e. 1 | f
 ##' @examples
-##' ff <- lme4::findbars(y~1+(x|f/g))
+##' ff <- findbars(y~1+(x|f/g))
 ##' expandAllGrpVar(ff)
 ##' expandAllGrpVar(quote(1|(f/g)/h))
 ##' expandAllGrpVar(quote(1|f/g/h))
@@ -226,6 +244,8 @@ head.name <- function(x) { x }
 
 ##' find and process random effects terms
 ##'
+##' This currently has two aliases (findbars and findbars_x) for disambiguation.
+##' FIXME: test with lme4 and reduce to just 'findbars'
 ##' @param term a formula or piece of a formula
 ##' @param debug (logical) debug?
 ##' @param specials list of special terms
@@ -236,7 +256,7 @@ head.name <- function(x) { x }
 ##' 3. parenthesized term: \emph{if} the head of the head is | (i.e.
 ##'    it is of the form (xx|gg), then convert it to the default
 ##'    special type; we won't allow pathological cases like
-##'    ((xx|gg)) ... [can we detect them?]
+##'    \code{((xx|gg))} ... (can we detect them?)
 ##' @examples
 ##' splitForm(quote(us(x,n=2)))
 ##' findbars_x(~ 1 + (x + y || g), expand_doublevert_method = "diag_special")
@@ -312,11 +332,14 @@ findbars_x <- function(term,
     }
 
     expandAllGrpVar(fbx(term))
-
 }
 
+#' @rdname formfuns
+#' @export
+findbars <- findbars_x
+
 ##' Parse a formula into fixed formula and random effect terms,
-##' treating 'special' terms (of the form foo(x|g[,m])) appropriately
+##' treating 'special' terms (of the form \code{foo(x|g[,m])}) appropriately
 ##'
 ##' Taken from Steve Walker's lme4ord,
 ##' ultimately from the flexLambda branch of lme4
@@ -343,7 +366,6 @@ findbars_x <- function(term,
 ##' splitForm(~1+rr(f|g,n=2))
 ##'
 ##' @author Steve Walker
-##' @importFrom lme4 nobars
 ##' @export
 splitForm <- function(formula,
                       defaultTerm="us",
@@ -631,4 +653,74 @@ no_specials <- function(term) {
     if (length(term) == 3) stop("don't know what to do")
     return(no_specials(term[[2]]))
 }
-        
+
+##' Remove the random-effects terms from a mixed-effects formula,
+##' thereby producing the fixed-effects formula.
+##'
+##' @title Omit terms separated by vertical bars in a formula
+##' @param term the right-hand side of a mixed-model formula
+##' @return the fixed-effects part of the formula
+##' @section Note: This function is called recursively on individual
+##' terms in the model, which is why the argument is called \code{term} and not
+##' a name like \code{form}, indicating a formula.
+##' @examples
+##' nobars(Reaction ~ Days + (Days|Subject)) ## => Reaction ~ Days
+##' @seealso \code{\link{formula}}, \code{\link{model.frame}}, \code{\link{model.matrix}}.
+##' @family utilities
+##' @keywords models utilities
+##' @export
+nobars <- function(term) {
+    nb <- nobars_(term)  ## call recursive version
+    if (is(term,"formula") && length(term)==3 && is.symbol(nb)) {
+        ## called with two-sided RE-only formula:
+        ##    construct response~1 formula
+        nb <- reformulate("1",response=deparse(nb))
+    }
+    ## called with one-sided RE-only formula, or RHS alone
+    if (is.null(nb)) {
+        nb <- if (is(term,"formula")) ~1 else 1
+    }
+    nb
+}
+
+nobars_ <- function(term)
+{
+    if (!anyBars(term)) return(term)
+    if (isBar(term)) return(NULL)
+    if (isAnyArgBar(term)) return(NULL)
+    if (length(term) == 2) {
+        nb <- nobars_(term[[2]])
+        if(is.null(nb)) return(NULL)
+        term[[2]] <- nb
+        return(term)
+    }
+    nb2 <- nobars_(term[[2]])
+    nb3 <- nobars_(term[[3]])
+    if (is.null(nb2)) return(nb3)
+    if (is.null(nb3)) return(nb2)
+    term[[2]] <- nb2
+    term[[3]] <- nb3
+    term
+}
+
+isBar <- function(term) {
+    if(is.call(term)) {
+        if((term[[1]] == as.name("|")) || (term[[1]] == as.name("||"))) {
+            return(TRUE)
+        }
+    }
+    FALSE
+}
+
+isAnyArgBar <- function(term) {
+    if ((term[[1]] != as.name("~")) && (term[[1]] != as.name("("))) {
+        for(i in seq_along(term)) {
+            if(isBar(term[[i]])) return(TRUE)
+        }
+    }
+    FALSE
+}
+
+anyBars <- function(term) {
+    any(c('|','||') %in% all.names(term))
+}
