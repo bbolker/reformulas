@@ -724,3 +724,104 @@ isAnyArgBar <- function(term) {
 anyBars <- function(term) {
     any(c('|','||') %in% all.names(term))
 }
+
+##' Substitute the '+' function for the '|' and '||' function in a mixed-model
+##' formula.  This provides a formula suitable for the current
+##' model.frame function.
+##'
+##' @title "Sub[stitute] Bars"
+##' @param term a mixed-model formula
+##' @return the formula with all |  and || operators replaced by +
+##' @section Note: This function is called recursively on individual
+##' terms in the model, which is why the argument is called \code{term} and not
+##' a name like \code{form}, indicating a formula.
+##' @examples
+##' subbars(Reaction ~ Days + (Days|Subject)) ## => Reaction ~ Days + (Days + Subject)
+##' @seealso \code{\link{formula}}, \code{\link{model.frame}}, \code{\link{model.matrix}}.
+##' @family utilities
+##' @keywords models utilities
+##' @export
+subbars <- function(term)
+{
+    if (is.name(term) || !is.language(term)) return(term)
+    if (length(term) == 2) {
+        term[[2]] <- subbars(term[[2]])
+        return(term)
+    }
+    stopifnot(length(term) >= 3)
+    if (is.call(term) && term[[1]] == as.name('|'))
+        term[[1]] <- as.name('+')
+    if (is.call(term) && term[[1]] == as.name('||'))
+        term[[1]] <- as.name('+')
+    for (j in 2:length(term)) term[[j]] <- subbars(term[[j]])
+    term
+}
+
+##' Does every level of f1 occur in conjunction with exactly one level
+##' of f2? The function is based on converting a triplet sparse matrix
+##' to a compressed column-oriented form in which the nesting can be
+##' quickly evaluated.
+##'
+##' @title Is f1 nested within f2?
+##'
+##' @param f1 factor 1
+##' @param f2 factor 2
+##'
+##' @return TRUE if factor 1 is nested within factor 2
+##' @examples
+##' with(Pastes, isNested(cask, batch))   ## => FALSE
+##' with(Pastes, isNested(sample, batch))  ## => TRUE
+##' @export
+isNested <- function(f1, f2)
+{
+    f1 <- as.factor(f1)
+    f2 <- as.factor(f2)
+    stopifnot(length(f1) == length(f2))
+    k <- length(levels(f1))
+    sm <- as(new("ngTMatrix",
+                 i = as.integer(f2) - 1L,
+                 j = as.integer(f1) - 1L,
+                 Dim = c(length(levels(f2)), k)),
+             "CsparseMatrix")
+    all(sm@p[2:(k+1L)] - sm@p[1:k] <= 1L)
+}
+
+subnms <- function(form, nms) {
+    ## Recursive function applied to individual terms
+    sbnm <- function(term)
+    {
+        if (is.name(term)) {
+            if (any(term == nms)) 0 else term
+        } else switch(length(term),
+               term, ## 1
+           {   ## 2
+               term[[2]] <- sbnm(term[[2]])
+               term
+           },
+           {   ## 3
+               term[[2]] <- sbnm(term[[2]])
+               term[[3]] <- sbnm(term[[3]])
+               term
+           })
+    }
+    sbnm(form)
+}
+
+##' Check for a constant term (a literal 1) in an expression
+##
+##' In the mixed-effects part of a nonlinear model formula, a constant
+##' term is not meaningful because every term must be relative to a
+##' nonlinear model parameter.  This function recursively checks the
+##' expressions in the formula for a a constant, calling stop() if
+##' such a term is encountered.
+##' @title Check for constant terms.
+##' @param expr an expression
+##' @return NULL.  The function is executed for its side effect.
+chck1 <- function(expr) {
+    if ((le <- length(expr)) == 1) {
+        if (is.numeric(expr) && expr == 1)
+            stop("1 is not meaningful in a nonlinear model formula")
+        return()
+    } else
+        for (j in seq_len(le)[-1]) Recall(expr[[j]])
+}
