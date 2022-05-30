@@ -16,6 +16,7 @@
 \alias{dropHead}
 \alias{drop.special}
 \alias{replaceForm}
+\alias{no_specials}
 \title{expand double-bar RE notation by splitting}
 \usage{
 expandDoubleVert(term)
@@ -59,6 +60,8 @@ dropHead(term, value)
 drop.special(x, value = quote(offset), preserve = NULL)
 
 replaceForm(term, target, repl)
+
+no_specials(term)
 }
 \arguments{
 \item{term}{expression/formula}

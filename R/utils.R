@@ -645,6 +645,9 @@ replaceForm <- function(term,target,repl) {
                                    y=replaceForm(term[[3]],target,repl))))
 }
 
+#' @export
+#' @rdname formfuns
+## FIXME: merge with noSpecials
 no_specials <- function(term) {
     if (is.list(term)) {
         return(lapply(term, no_specials))
