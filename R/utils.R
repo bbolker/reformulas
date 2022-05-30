@@ -103,6 +103,7 @@ reOnly <- function(f, response=FALSE,bracket=TRUE) {
 #' @param y a formula term (or an operator)
 #' @param op an operator
 #' @rdname formfuns
+#' @export
 ## FIXME: would be nice to have multiple dispatch, so
 ## (arg,op) gave unary, (arg,arg,op) gave binary operator
 makeOp <- function(x, y, op=NULL) {
