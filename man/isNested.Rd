@@ -21,6 +21,9 @@ to a compressed column-oriented form in which the nesting can be
 quickly evaluated.
 }
 \examples{
-with(Pastes, isNested(cask, batch))   ## => FALSE
-with(Pastes, isNested(sample, batch))  ## => TRUE
+if (requireNamespace("lme4")) {
+  data("Pastes", package = "lme4")  
+  with(Pastes, isNested(cask, batch))   ## => FALSE
+  with(Pastes, isNested(sample, batch))  ## => TRUE
+}
 }

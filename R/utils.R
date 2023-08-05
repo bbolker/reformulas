@@ -159,7 +159,7 @@ addForm <- function(...) {
 
 #' list of specials -- taken from enum.R
 findReTrmClasses <- function() {
-    names(.valid_covstruct)
+    c(names(.valid_covstruct), "s")
 }
 
 toLang <- function(x) parse(text=x)[[1]]
@@ -237,13 +237,13 @@ head.formula <- head.call <- function(x, ...) {
 }
 
 ## sugar: we can call head on a symbol and get back the symbol
-head.name <- function(x) { x }
+head.name <- function(x, ...) { x }
 
 ## TEST: does this work as a drop-in replacement for lme4::findbars
 ## if default.special = NULL?
 ## (would replace current expandDoubleVerts machinery)
 
-##' find and process random effects terms
+##' Find and process random effects terms
 ##'
 ##' This currently has two aliases (findbars and findbars_x) for disambiguation.
 ##' FIXME: test with lme4 and reduce to just 'findbars'
@@ -269,13 +269,17 @@ head.name <- function(x) { x }
 ##' findbars_x(~ (1||Subject))
 ##' findbars_x(~ (1|Subject))
 ##' findbars_x(~ (1|Subject), default.special = NULL)
-##' findbars_x(~ 1 + x) 
+##' findbars_x(~ 1 + x)
+##' findbars_x(~ s(x, bs = "tp"))
+##' findbars_x(y ~ a + log(b) + s(x, bs = "tp") + s(y, bs = "gp"),
+##'    target = "s", default.special = NULL)
 ##' @rdname formfuns
 ##' @export
 findbars_x <- function(term,
                 debug=FALSE,
                 specials=character(0),
                 default.special="us",
+                target = '|',
                 expand_doublevert_method = c("diag_special", "split")) {
 
     expand_doublevert_method <- match.arg(expand_doublevert_method)
@@ -283,6 +287,7 @@ findbars_x <- function(term,
     ds <- if (is.null(default.special)) {
               NULL
           } else {
+              ## convert default special char to symbol (less ugly way?)
               eval(substitute(as.name(foo),list(foo=default.special)))
           }
 
@@ -299,8 +304,11 @@ findbars_x <- function(term,
             if (debug) cat("special: ",deparse(term),"\n")
             return(term)
         }
-        if (head(term) == as.name('|')) {  ## found x | g
-            if (debug) cat("bar term:",deparse(term),"\n")
+        if (head(term) == as.name(target)) {  ## found x | g
+            if (debug) {
+                tt <- if (target == '|') "bar" else sprintf('"%s"', target)
+                cat(sprintf("%s term: %s\n", tt, deparse(term)))
+            }
             if (is.null(ds)) return(term)
             return(makeOp(term, ds))
         }
@@ -365,6 +373,7 @@ findbars <- findbars_x
 ##' splitForm(~x+y+(f|g)+cs(1|g)+cs(a|b,stuff))  ## complex special
 ##' splitForm(~(((x+y))))               ## lots of parentheses
 ##' splitForm(~1+rr(f|g,n=2))
+##' splitForm(~1+s(x, bs = "tp"))
 ##'
 ##' @author Steve Walker
 ##' @export
@@ -372,15 +381,14 @@ splitForm <- function(formula,
                       defaultTerm="us",
                       allowFixedOnly=TRUE,
                       allowNoSpecials=TRUE,
-                      debug=FALSE) {
+                      debug=FALSE,
+                      specials = findReTrmClasses()) {
 
     ## logic:
 
     ## string for error message *if* specials not allowed
     ## (probably package-specific)
     noSpecialsAlt <- "lmer or glmer"
-
-    specials <- findReTrmClasses()
 
     ## formula <- expandDoubleVerts(formula)
     ## split formula into separate
@@ -442,6 +450,10 @@ splitForm <- function(formula,
     } else {
         reTrmFormulas <- reTrmAddArgs <- reTrmClasses <- NULL
     }
+
+    ## nobars() will get rid of any *naked* RE terms
+    ## FIXME ... let noSpecials handle naked bar-terms if desired ?
+    ## (would adding "|" to reTrmClasses work?)
     fixedFormula <- noSpecials(nobars(formula))
 
     list(fixedFormula  = fixedFormula,
@@ -460,26 +472,30 @@ splitForm <- function(formula,
 ##' noSpecials(y~us(1|f), delete=FALSE)
 ##' noSpecials(y~us(1|f), debug=TRUE)
 ##' noSpecials(y~us+1)  ## should *not* delete unless head of a function
-##' noSpecials(~us+1)   ## should work on a one-sided formula!
+##' noSpecials(~us(1|f)+1)   ## should work on a one-sided formula!
+##' noSpecials(~s(stuff) + a + b, specials = "s")
 ##' @export
 ##' @keywords internal
-noSpecials <- function(term, delete=TRUE, debug=FALSE) {
-    nospec <- noSpecials_(term, delete=delete, debug=debug)
+noSpecials <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClasses()) {
+    nospec <- noSpecials_(term, delete=delete, debug=debug, specials = specials)
     if (inherits(term, "formula") && length(term) == 3 && is.symbol(nospec)) {
         ## called with two-sided RE-only formula:
         ##    construct response~1 formula
         as.formula(substitute(R~1,list(R=nospec)),
                    env=environment(term))
+        ## FIXME::better 'nothing left' handling
+    } else if (is.null(nospec)) {
+        ~1
     } else {
         nospec
     }
 }
 
-noSpecials_ <- function(term,delete=TRUE, debug=FALSE) {
+noSpecials_ <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClasses()) {
     if (debug) print(term)
-    if (!anySpecial(term)) return(term)
+    if (!anySpecial(term, specials)) return(term)
     if (length(term)==1) return(term)  ## 'naked' specials
-    if (isSpecial(term)) {
+    if (isSpecial(term, specials)) {
         if(delete) {
             return(NULL)
         } else { ## careful to return  (1|f) and not  1|f:
@@ -487,9 +503,9 @@ noSpecials_ <- function(term,delete=TRUE, debug=FALSE) {
         }
     } else {
         if (debug) print("not special")
-        nb2 <- noSpecials_(term[[2]], delete=delete, debug=debug)
+        nb2 <- noSpecials_(term[[2]], delete=delete, debug=debug, specials = specials)
         nb3 <- if (length(term)==3) {
-                   noSpecials_(term[[3]], delete=delete, debug=debug)
+                   noSpecials_(term[[3]], delete=delete, debug=debug, specials = specials)
                } else NULL
         if (is.null(nb2)) {
             return(nb3)
@@ -508,26 +524,26 @@ noSpecials_ <- function(term,delete=TRUE, debug=FALSE) {
     }
 }
 
-isSpecial <- function(term) {
+isSpecial <- function(term, specials = findReTrmClasses()) {
     if(is.call(term)) {
         ## %in% doesn't work (requires vector args)
-        for(cls in findReTrmClasses()) {
+        for(cls in specials) {
             if(term[[1]] == cls) return(TRUE)
         }
     }
     FALSE
 }
 
-isAnyArgSpecial <- function(term) {
+isAnyArgSpecial <- function(term, specials = findReTrmClasses()) {
     for(tt in term)
-        if(isSpecial(tt)) return(TRUE)
+        if(isSpecial(tt, specials)) return(TRUE)
     FALSE
 }
 
 ## This could be in principle be fooled by a term with a matching name
 ## but this case is caught in noSpecials_() where we test for length>1
-anySpecial <- function(term) {
-    any(findReTrmClasses() %in% all.names(term))
+anySpecial <- function(term, specials=findReTrmClasses()) {
+    any(specials %in% all.names(term))
 }
 
 ##' test whether a formula contains a particular element?
@@ -648,14 +664,19 @@ replaceForm <- function(term,target,repl) {
 
 #' @export
 #' @rdname formfuns
-## FIXME: merge with noSpecials
-no_specials <- function(term) {
+##' @examples
+##' no_specials(findbars_x(y ~ 1 + s(x) + (f|g)))
+no_specials <- function(term, specials = c("|", "||", "s")) {
+    ## FIXME: merge with noSpecials
+    ## FIXME: why does this only work on 2-element objects?
     if (is.list(term)) {
         return(lapply(term, no_specials))
     }
-    if (identical(head(term), quote(`|`))) return(term)
+    for (ss in specials) {
+        if (identical(head(term), as.name(ss))) return(term)
+    }
     if (length(term) == 3) stop("don't know what to do")
-    return(no_specials(term[[2]]))
+    return(no_specials(term[[2]], specials))
 }
 
 ##' Remove the random-effects terms from a mixed-effects formula,
@@ -729,37 +750,44 @@ anyBars <- function(term) {
     any(c('|','||') %in% all.names(term))
 }
 
-##' Substitute the '+' function for the '|' and '||' function in a mixed-model
-##' formula.  This provides a formula suitable for the current
-##' model.frame function.
-##'
-##' @title "Sub[stitute] Bars"
-##' @param term a mixed-model formula
-##' @return the formula with all |  and || operators replaced by +
-##' @section Note: This function is called recursively on individual
-##' terms in the model, which is why the argument is called \code{term} and not
-##' a name like \code{form}, indicating a formula.
+##' Substitute safe chars (+) for specials (for use in \code{model.frame})
+##' (Generalized from \code{lme4}'s \code{subbars} function.)
+##' @aliases subbars
+##' @param term formula or term in a formula
+##' @param specials names of specials to process
+##' @param keep_args number of arguments to retain (matching \code{specials})
+##' @return a term or formula with specials replaced by \code{+} (and extra arguments dropped)
+##' @keywords internal
 ##' @examples
-##' subbars(Reaction ~ Days + (Days|Subject)) ## => Reaction ~ Days + (Days + Subject)
-##' @seealso \code{\link{formula}}, \code{\link{model.frame}}, \code{\link{model.matrix}}.
-##' @family utilities
-##' @keywords models utilities
+##' sub_specials( ~ (1|x) + (a + b || y) + s(a, b, c))
+##' sub_specials(Reaction ~ s(Days) + (1 + Subject))
 ##' @export
-subbars <- function(term)
-{
-    if (is.name(term) || !is.language(term)) return(term)
-    if (length(term) == 2) {
-        term[[2]] <- subbars(term[[2]])
+sub_specials <- function (term,
+                          specials = c("|", "||", "s"),
+                          keep_args = c(2, 2, 1)) {
+    if (is.name(term) || !is.language(term)) 
         return(term)
+    ## previous version recursed immediately for unary operators,
+    ## (we were only interested in `|`(x,y) and `||`(x,y))
+    ## but here s(x) needs to be processed ...
+    for (i in seq_along(specials)) {
+        if (is.call(term) && term[[1]] == as.name(specials[i])) {
+            term[[1]] <- as.name("+")
+            ## converts s(x) to +x, which is ugly, but
+            ##  formula can handle repeated '+'
+            ## discard additional arguments (e.g for s(x, ...))
+            ## (fragile re: order??)
+            term <- term[1:(1+keep_args[i])]
+        }
     }
-    stopifnot(length(term) >= 3)
-    if (is.call(term) && term[[1]] == as.name('|'))
-        term[[1]] <- as.name('+')
-    if (is.call(term) && term[[1]] == as.name('||'))
-        term[[1]] <- as.name('+')
-    for (j in 2:length(term)) term[[j]] <- subbars(term[[j]])
+    for (j in 2:length(term)) term[[j]] <- sub_specials(term[[j]],
+                                                        specials = specials,
+                                                        keep_args = keep_args)
     term
 }
+
+#' @export
+subbars <- sub_specials
 
 ##' Does every level of f1 occur in conjunction with exactly one level
 ##' of f2? The function is based on converting a triplet sparse matrix
@@ -773,8 +801,12 @@ subbars <- function(term)
 ##'
 ##' @return TRUE if factor 1 is nested within factor 2
 ##' @examples
-##' with(Pastes, isNested(cask, batch))   ## => FALSE
-##' with(Pastes, isNested(sample, batch))  ## => TRUE
+##' if (requireNamespace("lme4")) {
+##'   data("Pastes", package = "lme4")  
+##'   with(Pastes, isNested(cask, batch))   ## => FALSE
+##'   with(Pastes, isNested(sample, batch))  ## => TRUE
+##' }
+##' @importFrom methods as new
 ##' @export
 isNested <- function(f1, f2)
 {

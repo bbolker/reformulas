@@ -27,9 +27,6 @@ nobars(Reaction ~ Days + (Days|Subject)) ## => Reaction ~ Days
 }
 \seealso{
 \code{\link{formula}}, \code{\link{model.frame}}, \code{\link{model.matrix}}.
-
-Other utilities: 
-\code{\link{subbars}()}
 }
 \concept{utilities}
 \keyword{models}
