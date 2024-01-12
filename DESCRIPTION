@@ -1,5 +1,5 @@
 Package: reformulas
-Title: Machinery for processing random effect formulas
+Title: Machinery for Processing Random Effect Formulas
 Version: 0.0.2
 Authors@R: 
     person(given = "Ben",

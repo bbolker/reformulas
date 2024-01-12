@@ -111,8 +111,6 @@ special type; we won't allow pathological cases like
 }}
 
 \item{preserve}{(integer) retain the specified occurrence of "value"}
-
-\item{a}{formula term}
 }
 \value{
 a list of expressions
