@@ -11,7 +11,7 @@ Description: Takes formulas including random-effects components (formatted as in
 License: GPL-3
 Encoding: UTF-8
 Imports: stats, methods
-Suggests: lme4
+Suggests: lme4, tinytest
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1

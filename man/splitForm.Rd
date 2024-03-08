@@ -36,7 +36,7 @@ a list containing elements \code{fixedFormula};
 }
 \description{
 Parse a formula into fixed formula and random effect terms,
-treating 'special' terms (of the form \code{foo(x|g[,m])}) appropriately
+treating 'special' terms (of the form foo(x|g[,m])) appropriately
 }
 \details{
 Taken from Steve Walker's lme4ord,

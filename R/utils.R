@@ -3,9 +3,6 @@ if ((getRversion()) < "3.2.1") {
     lengths <- function (x, use.names = TRUE) vapply(x, length, 1L, USE.NAMES = use.names)
 }
 
-#' @importFrom methods is
-#' @importFrom stats as.formula formula reformulate setNames terms update
-
 if (getRversion() < "4.0.0") {
     deparse1 <- function (expr, collapse = " ", width.cutoff = 500L, ...) {
         paste(deparse(expr, width.cutoff, ...), collapse = collapse)
@@ -83,6 +80,8 @@ sumTerms <- function(termList) {
 #' @param response include response variable?
 #' @param bracket bracket-protect terms?
 #' @rdname formfuns
+#' @examples
+#' reOnly(~ 1 + x + y + (1|f) + (1|g))
 #' @export
 reOnly <- function(f, response=FALSE,bracket=TRUE) {
     flen <- length(f)
@@ -103,7 +102,6 @@ reOnly <- function(f, response=FALSE,bracket=TRUE) {
 #' @param y a formula term (or an operator)
 #' @param op an operator
 #' @rdname formfuns
-#' @export
 ## FIXME: would be nice to have multiple dispatch, so
 ## (arg,op) gave unary, (arg,arg,op) gave binary operator
 makeOp <- function(x, y, op=NULL) {
@@ -142,8 +140,8 @@ addForm <- function(...) {
   Reduce(addForm0,list(...))
 }
 
-## FIXME: find a way to implement this in a robust/platform-friendly way
-## (copied from glmmTMB R/enum.R)
+## FIXME: how do we handle sharing this information
+## (names of covstructs) between glmmTMB and here?
 .valid_covstruct <- c(
   diag = 0,
   us   = 1,
@@ -154,7 +152,8 @@ addForm <- function(...) {
   gau = 6,
   mat = 7,
   toep = 8,
-  rr = 9
+  rr = 9,
+  homdiag = 10
 )
 
 #' list of specials -- taken from enum.R
@@ -191,13 +190,17 @@ expandGrpVar <- function(f) {
 ##' random effect terms
 ##' @param bb a list of naked grouping variables, i.e. 1 | f
 ##' @examples
-##' ff <- findbars(y~1+(x|f/g))
+##' ff <- findbars_x(y~1+(x|f/g))
 ##' expandAllGrpVar(ff)
 ##' expandAllGrpVar(quote(1|(f/g)/h))
 ##' expandAllGrpVar(quote(1|f/g/h))
 ##' expandAllGrpVar(quote(1|f*g))
 ##' expandAllGrpVar(quote(1|f+g))
 ##' expandAllGrpVar(quote(a+b|f+g+h*i))
+##' ## wish list ... this should be (1|a) + (1|a:b) + (1|a:b:c) + (1|a:b:d) ...
+##' ## expandAllGrpVar(quote(a/b/(c+d)))
+##' expandAllGrpVar(quote(s(log(d), k = 4)))
+##' expandAllGrpVar(quote(s(log(d+1))))
 ##' @importFrom utils head
 ##' @rdname formfuns
 ##' @export
@@ -208,12 +211,12 @@ expandAllGrpVar <- function(bb) {
     else {
         for (i in seq_along(bb)) {
             esfun <- function(x) {
-                if (length(x)==1) return(x)
+                if (length(x)==1 || !anySpecial(x, "|")) return(x)
                 if (length(x)==2) {
-                    ## unary operator such as diag(1|f/g)
-                    ## return diag(...) + diag(...) + ...
-                    return(lapply(esfun(x[[2]]),
-                                  makeOp, y=head(x)))
+                        ## unary operator such as diag(1|f/g)
+                        ## return diag(...) + diag(...) + ...
+                        return(lapply(esfun(x[[2]]),
+                                      makeOp, y=head(x)))
                 }
                 if (length(x)==3) {
                     ## binary operator
@@ -221,8 +224,10 @@ expandAllGrpVar <- function(bb) {
                         return(lapply(expandGrpVar(x[[3]]),
                                       makeOp, x=x[[2]], op=quote(`|`)))
                     } else {
-                        return(setNames(makeOp(esfun(x[[2]]), esfun(x[[3]]),
-                                               op=x[[1]]), names(x)))
+                        return(x)
+                        ## return(x) would be nice, but in that case x gets evaluated
+                        ## return(setNames(makeOp(esfun(x[[2]]), esfun(x[[3]]),
+                        ##  op=x[[1]]), names(x)))
                     }
                 }
             } ## esfun def.
@@ -232,10 +237,12 @@ expandAllGrpVar <- function(bb) {
 }
 
 ## sugar: this returns the operator, whether ~ or something else
+#' @export
 head.formula <- head.call <- function(x, ...) {
     x[[1]]
 }
 
+#' @export
 ## sugar: we can call head on a symbol and get back the symbol
 head.name <- function(x, ...) { x }
 
@@ -245,8 +252,6 @@ head.name <- function(x, ...) { x }
 
 ##' Find and process random effects terms
 ##'
-##' This currently has two aliases (findbars and findbars_x) for disambiguation.
-##' FIXME: test with lme4 and reduce to just 'findbars'
 ##' @param term a formula or piece of a formula
 ##' @param debug (logical) debug?
 ##' @param specials list of special terms
@@ -257,7 +262,7 @@ head.name <- function(x, ...) { x }
 ##' 3. parenthesized term: \emph{if} the head of the head is | (i.e.
 ##'    it is of the form (xx|gg), then convert it to the default
 ##'    special type; we won't allow pathological cases like
-##'    \code{((xx|gg))} ... (can we detect them?)
+##'    ((xx|gg)) ... can we detect them?
 ##' @examples
 ##' splitForm(quote(us(x,n=2)))
 ##' findbars_x(~ 1 + (x + y || g), expand_doublevert_method = "diag_special")
@@ -335,20 +340,34 @@ findbars_x <- function(term,
             return(fbx(term[[2]]))
         }
         ## binary operator, decompose both arguments
-        if (debug) cat("binary operator:",deparse(term[[2]]),",",
-                       deparse(term[[3]]),"\n")
-        c(fbx(term[[2]]), fbx(term[[3]]))
+        f2 <- fbx(term[[2]])
+        f3 <- fbx(term[[3]])
+
+        if (debug) { cat("binary operator:",deparse(term[[2]]),",",
+                         deparse(term[[3]]),"\n")
+                         cat("term 2: ", deparse(f2), "\n")
+                         cat("term 3: ", deparse(f3), "\n")
+        }
+        c(f2, f3)
     }
 
-    expandAllGrpVar(fbx(term))
+    fbx_term <- fbx(term)
+    if (debug) cat("fbx(term): ", deparse(fbx_term))
+    expandAllGrpVar(fbx_term)
+
 }
 
-#' @rdname formfuns
-#' @export
-findbars <- findbars_x
+##' @rdname formfuns
+##' @export
+## lme4::findbars-compatible
+findbars <- function(term) {
+    findbars_x(term,
+               default.special=NULL,
+               expand_doublevert_method = "split")               
+}
 
 ##' Parse a formula into fixed formula and random effect terms,
-##' treating 'special' terms (of the form \code{foo(x|g[,m])}) appropriately
+##' treating 'special' terms (of the form foo(x|g\[,m\])) appropriately
 ##'
 ##' Taken from Steve Walker's lme4ord,
 ##' ultimately from the flexLambda branch of lme4
@@ -624,6 +643,7 @@ dropHead <- function(term,value) {
 ##' @examples
 ##' drop.special(x~a + b+ offset(z))
 ##' @export
+##' @importFrom stats update formula
 ##' @keywords internal
 drop.special <- function(x, value=quote(offset), preserve = NULL) {
   k <- 0
@@ -662,13 +682,10 @@ replaceForm <- function(term,target,repl) {
                                    y=replaceForm(term[[3]],target,repl))))
 }
 
-#' @export
-#' @rdname formfuns
+##' @noRd
 ##' @examples
-##' no_specials(findbars_x(y ~ 1 + s(x) + (f|g)))
+##' no_specials(y ~ 1 + s(x) + (f|g))
 no_specials <- function(term, specials = c("|", "||", "s")) {
-    ## FIXME: merge with noSpecials
-    ## FIXME: why does this only work on 2-element objects?
     if (is.list(term)) {
         return(lapply(term, no_specials))
     }
@@ -679,92 +696,23 @@ no_specials <- function(term, specials = c("|", "||", "s")) {
     return(no_specials(term[[2]], specials))
 }
 
-##' Remove the random-effects terms from a mixed-effects formula,
-##' thereby producing the fixed-effects formula.
-##'
-##' @title Omit terms separated by vertical bars in a formula
-##' @param term the right-hand side of a mixed-model formula
-##' @return the fixed-effects part of the formula
-##' @section Note: This function is called recursively on individual
-##' terms in the model, which is why the argument is called \code{term} and not
-##' a name like \code{form}, indicating a formula.
-##' @examples
-##' nobars(Reaction ~ Days + (Days|Subject)) ## => Reaction ~ Days
-##' @seealso \code{\link{formula}}, \code{\link{model.frame}}, \code{\link{model.matrix}}.
-##' @family utilities
-##' @keywords models utilities
-##' @export
-nobars <- function(term) {
-    nb <- nobars_(term)  ## call recursive version
-    if (is(term,"formula") && length(term)==3 && is.symbol(nb)) {
-        ## called with two-sided RE-only formula:
-        ##    construct response~1 formula
-        nb <- reformulate("1",response=deparse(nb))
-    }
-    ## called with one-sided RE-only formula, or RHS alone
-    if (is.null(nb)) {
-        nb <- if (is(term,"formula")) ~1 else 1
-    }
-    nb
-}
-
-nobars_ <- function(term)
-{
-    if (!anyBars(term)) return(term)
-    if (isBar(term)) return(NULL)
-    if (isAnyArgBar(term)) return(NULL)
-    if (length(term) == 2) {
-        nb <- nobars_(term[[2]])
-        if(is.null(nb)) return(NULL)
-        term[[2]] <- nb
-        return(term)
-    }
-    nb2 <- nobars_(term[[2]])
-    nb3 <- nobars_(term[[3]])
-    if (is.null(nb2)) return(nb3)
-    if (is.null(nb3)) return(nb2)
-    term[[2]] <- nb2
-    term[[3]] <- nb3
-    term
-}
-
-isBar <- function(term) {
-    if(is.call(term)) {
-        if((term[[1]] == as.name("|")) || (term[[1]] == as.name("||"))) {
-            return(TRUE)
-        }
-    }
-    FALSE
-}
-
-isAnyArgBar <- function(term) {
-    if ((term[[1]] != as.name("~")) && (term[[1]] != as.name("("))) {
-        for(i in seq_along(term)) {
-            if(isBar(term[[i]])) return(TRUE)
-        }
-    }
-    FALSE
-}
-
-anyBars <- function(term) {
-    any(c('|','||') %in% all.names(term))
-}
 
 ##' Substitute safe chars (+) for specials (for use in \code{model.frame})
 ##' (Generalized from \code{lme4}'s \code{subbars} function.)
-##' @aliases subbars
 ##' @param term formula or term in a formula
 ##' @param specials names of specials to process
 ##' @param keep_args number of arguments to retain (matching \code{specials})
 ##' @return a term or formula with specials replaced by \code{+} (and extra arguments dropped)
 ##' @keywords internal
 ##' @examples
-##' sub_specials( ~ (1|x) + (a + b || y) + s(a, b, c))
+##' sub_specials( ~ s(a, k=4))
+##' sub_specials( ~ (1|x) + (a + b || y) + s(a, k=4))
 ##' sub_specials(Reaction ~ s(Days) + (1 + Subject))
+##' sub_specials(~ s(cos((y^2*3)/2), bs = "tp"))
 ##' @export
 sub_specials <- function (term,
                           specials = c("|", "||", "s"),
-                          keep_args = c(2, 2, 1)) {
+                          keep_args = c(2L, 2L, NA_integer_)) {
     if (is.name(term) || !is.language(term)) 
         return(term)
     ## previous version recursed immediately for unary operators,
@@ -772,92 +720,25 @@ sub_specials <- function (term,
     ## but here s(x) needs to be processed ...
     for (i in seq_along(specials)) {
         if (is.call(term) && term[[1]] == as.name(specials[i])) {
+            if (is.na(keep_args[i])) {
+                ## keep only *unnamed* args
+                if (!is.null(names(term))) {
+                    term <- term[names(term)==""]
+                }
+            } else {
+                term <- term[1:(1+keep_args[i])]
+            }
             term[[1]] <- as.name("+")
             ## converts s(x) to +x, which is ugly, but
             ##  formula can handle repeated '+'
             ## discard additional arguments (e.g for s(x, ...))
             ## (fragile re: order??)
-            term <- term[1:(1+keep_args[i])]
         }
     }
-    for (j in 2:length(term)) term[[j]] <- sub_specials(term[[j]],
-                                                        specials = specials,
-                                                        keep_args = keep_args)
-    term
-}
-
-#' @export
-subbars <- sub_specials
-
-##' Does every level of f1 occur in conjunction with exactly one level
-##' of f2? The function is based on converting a triplet sparse matrix
-##' to a compressed column-oriented form in which the nesting can be
-##' quickly evaluated.
-##'
-##' @title Is f1 nested within f2?
-##'
-##' @param f1 factor 1
-##' @param f2 factor 2
-##'
-##' @return TRUE if factor 1 is nested within factor 2
-##' @examples
-##' if (requireNamespace("lme4")) {
-##'   data("Pastes", package = "lme4")  
-##'   with(Pastes, isNested(cask, batch))   ## => FALSE
-##'   with(Pastes, isNested(sample, batch))  ## => TRUE
-##' }
-##' @importFrom methods as new
-##' @export
-isNested <- function(f1, f2)
-{
-    f1 <- as.factor(f1)
-    f2 <- as.factor(f2)
-    stopifnot(length(f1) == length(f2))
-    k <- length(levels(f1))
-    sm <- as(new("ngTMatrix",
-                 i = as.integer(f2) - 1L,
-                 j = as.integer(f1) - 1L,
-                 Dim = c(length(levels(f2)), k)),
-             "CsparseMatrix")
-    all(sm@p[2:(k+1L)] - sm@p[1:k] <= 1L)
-}
-
-subnms <- function(form, nms) {
-    ## Recursive function applied to individual terms
-    sbnm <- function(term)
-    {
-        if (is.name(term)) {
-            if (any(term == nms)) 0 else term
-        } else switch(length(term),
-               term, ## 1
-           {   ## 2
-               term[[2]] <- sbnm(term[[2]])
-               term
-           },
-           {   ## 3
-               term[[2]] <- sbnm(term[[2]])
-               term[[3]] <- sbnm(term[[3]])
-               term
-           })
+    for (j in 2:length(term)) {
+        term[[j]] <- sub_specials(term[[j]],
+                                  specials = specials,
+                                  keep_args = keep_args)
     }
-    sbnm(form)
-}
-
-##' Check for a constant term (a literal 1) in an expression
-##
-##' In the mixed-effects part of a nonlinear model formula, a constant
-##' term is not meaningful because every term must be relative to a
-##' nonlinear model parameter.  This function recursively checks the
-##' expressions in the formula for a a constant, calling stop() if
-##' such a term is encountered.
-##' @title Check for constant terms.
-##' @param expr an expression
-##' @return NULL.  The function is executed for its side effect.
-chck1 <- function(expr) {
-    if ((le <- length(expr)) == 1) {
-        if (is.numeric(expr) && expr == 1)
-            stop("1 is not meaningful in a nonlinear model formula")
-        return()
-    } else
-        for (j in seq_len(le)[-1]) Recall(expr[[j]])
+    term
 }

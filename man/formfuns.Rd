@@ -16,7 +16,6 @@
 \alias{dropHead}
 \alias{drop.special}
 \alias{replaceForm}
-\alias{no_specials}
 \title{expand double-bar RE notation by splitting}
 \usage{
 expandDoubleVert(term)
@@ -44,14 +43,7 @@ findbars_x(
   expand_doublevert_method = c("diag_special", "split")
 )
 
-findbars(
-  term,
-  debug = FALSE,
-  specials = character(0),
-  default.special = "us",
-  target = "|",
-  expand_doublevert_method = c("diag_special", "split")
-)
+findbars(term)
 
 inForm(form, value)
 
@@ -62,8 +54,6 @@ dropHead(term, value)
 drop.special(x, value = quote(offset), preserve = NULL)
 
 replaceForm(term, target, repl)
-
-no_specials(term, specials = c("|", "||", "s"))
 }
 \arguments{
 \item{term}{expression/formula}
@@ -107,7 +97,7 @@ no_specials(term, specials = c("|", "||", "s"))
 \item parenthesized term: \emph{if} the head of the head is | (i.e.
 it is of the form (xx|gg), then convert it to the default
 special type; we won't allow pathological cases like
-\code{((xx|gg))} ... (can we detect them?)
+((xx|gg)) ... can we detect them?
 }}
 
 \item{preserve}{(integer) retain the specified occurrence of "value"}
@@ -120,20 +110,22 @@ Modeled after lme4:::expandSlash, by Doug Bates. However,
 all formula operators that apply to factors (\code{*}, \code{/}, \code{+})
 are applicable: the results are expanded into a list of independent (additive)
 random effect terms
-
-This currently has two aliases (findbars and findbars_x) for disambiguation.
-FIXME: test with lme4 and reduce to just 'findbars'
 }
 \examples{
+reOnly(~ 1 + x + y + (1|f) + (1|g))
 addForm0(y~x,~1)
 addForm0(~x,~y)
-ff <- findbars(y~1+(x|f/g))
+ff <- findbars_x(y~1+(x|f/g))
 expandAllGrpVar(ff)
 expandAllGrpVar(quote(1|(f/g)/h))
 expandAllGrpVar(quote(1|f/g/h))
 expandAllGrpVar(quote(1|f*g))
 expandAllGrpVar(quote(1|f+g))
 expandAllGrpVar(quote(a+b|f+g+h*i))
+## wish list ... this should be (1|a) + (1|a:b) + (1|a:b:c) + (1|a:b:d) ...
+## expandAllGrpVar(quote(a/b/(c+d)))
+expandAllGrpVar(quote(s(log(d), k = 4)))
+expandAllGrpVar(quote(s(log(d+1))))
 splitForm(quote(us(x,n=2)))
 findbars_x(~ 1 + (x + y || g), expand_doublevert_method = "diag_special")
 findbars_x(~ 1 + (x + y || g), expand_doublevert_method = "split")
@@ -167,6 +159,5 @@ replaceForm(quote(a(b+x*c(y,z))),quote(y),quote(R))
 ss <- ~(1 | cask:batch) + (1 | batch)
 replaceForm(ss,quote(cask:batch),quote(batch:cask))
 replaceForm(ss, quote(`:`), quote(`\%:\%`))
-no_specials(findbars_x(y ~ 1 + s(x) + (f|g)))
 }
 \keyword{internal}
