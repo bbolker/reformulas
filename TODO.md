@@ -1,6 +1,7 @@
 ## to do
 
 - figure out how to avoid copying `.valid_covstruct`
+- add `subbars`, `mkReTrms` (with options)
 - test with `lme4` and `glmmTMB` branches
 - push to CRAN ... ??
 - tests!

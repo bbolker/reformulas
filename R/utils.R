@@ -104,6 +104,7 @@ reOnly <- function(f, response=FALSE,bracket=TRUE) {
 #' @rdname formfuns
 ## FIXME: would be nice to have multiple dispatch, so
 ## (arg,op) gave unary, (arg,arg,op) gave binary operator
+#' @export
 makeOp <- function(x, y, op=NULL) {
     if (is.null(op) || missing(y)) {  ## unary
         if (is.null(op)) {
@@ -559,6 +560,11 @@ isAnyArgSpecial <- function(term, specials = findReTrmClasses()) {
     FALSE
 }
 
+ 
+#' Detect whether there are any 'specials' in a formula term
+#' @param term formula term
+#' @param specials values to detect
+#' @export
 ## This could be in principle be fooled by a term with a matching name
 ## but this case is caught in noSpecials_() where we test for length>1
 anySpecial <- function(term, specials=findReTrmClasses()) {
@@ -682,9 +688,13 @@ replaceForm <- function(term,target,repl) {
                                    y=replaceForm(term[[3]],target,repl))))
 }
 
-##' @noRd
+
+##' Drop 'specials' from a formula
+##' @param term a term or formula
+##' @param specials function types to drop
 ##' @examples
 ##' no_specials(y ~ 1 + s(x) + (f|g))
+##' @export
 no_specials <- function(term, specials = c("|", "||", "s")) {
     if (is.list(term)) {
         return(lapply(term, no_specials))
