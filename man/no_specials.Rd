@@ -15,5 +15,5 @@ no_specials(term, specials = c("|", "||", "s"))
 Drop 'specials' from a formula
 }
 \examples{
-no_specials(y ~ 1 + s(x) + (f|g))
+no_specials(findbars_x(~ 1 + s(x) + (f|g) + diag(x|y)))
 }

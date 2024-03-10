@@ -699,7 +699,7 @@ replaceForm <- function(term,target,repl) {
 ##' @param term a term or formula
 ##' @param specials function types to drop
 ##' @examples
-##' no_specials(y ~ 1 + s(x) + (f|g))
+##' no_specials(findbars_x(~ 1 + s(x) + (f|g) + diag(x|y)))
 ##' @export
 no_specials <- function(term, specials = c("|", "||", "s")) {
     if (is.list(term)) {
