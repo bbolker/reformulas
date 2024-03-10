@@ -33,7 +33,7 @@
 ##'     i.e. reflecting the \code{reorder.terms} argument)}
 ##' @importFrom Matrix sparseMatrix drop0
 ## (no methods found in package 'Matrix' for rbind ... ???)
-##' @importMethodsFrom Matrix coerce rbind
+##' @importMethodsFrom Matrix coerce t diag
 ##' @family utilities
 ##' @export
 mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
@@ -87,24 +87,23 @@ mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
   ## operator?  In other words should Lambdat be generated directly
   ## instead of generating Lambda first then transposing?
   if (calc.lambdat) {
-      Lambdat <-
-          t(do.call(sparseMatrix,
-              do.call(rbind,
-                      lapply(seq_along(blist), function(i)
-                      {
-                        mm <- matrix(seq_len(nb[i]), ncol = nc[i],
-                                     byrow = TRUE)
-                        dd <- diag(nc[i])
-                        ltri <- lower.tri(dd, diag = TRUE)
-                        ii <- row(dd)[ltri]
-                        jj <- col(dd)[ltri]
-                        ## unused: dd[cbind(ii, jj)] <- seq_along(ii)
-                        data.frame(i = as.vector(mm[, ii]) + boff[i],
-                                   j = as.vector(mm[, jj]) + boff[i],
-                                   x = as.double(rep.int(seq_along(ii),
-                                                         rep.int(nl[i], length(ii))) +
-                                                   thoff[i]))
-                      }))))
+      mk_b <-function(i) {
+          mm <- matrix(seq_len(nb[i]), ncol = nc[i],
+                       byrow = TRUE)
+          dd <- diag(nc[i])
+          ltri <- lower.tri(dd, diag = TRUE)
+          ii <- row(dd)[ltri]
+          jj <- col(dd)[ltri]
+          ## unused: dd[cbind(ii, jj)] <- seq_along(ii)
+          data.frame(i = as.vector(mm[, ii]) + boff[i],
+                     j = as.vector(mm[, jj]) + boff[i],
+                     x = as.double(rep.int(seq_along(ii),
+                                           rep.int(nl[i], length(ii))) +
+                                   thoff[i]))
+      }
+      Lambdat <- t(do.call(sparseMatrix,
+                           do.call(rbind,
+                                   lapply(seq_along(blist), mk_b))))
       Lind <- as.integer(Lambdat@x)
   } else {
       Lambdat <- Lind <- NULL
@@ -146,6 +145,7 @@ mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
 ##' @return list containing grouping factor, sparse model matrix, number of levels, names
 ##' @importFrom Matrix KhatriRao fac2sparse sparse.model.matrix
 ##' @importFrom stats model.matrix
+##' @noRd
 mkBlist <- function(x,frloc, drop.unused.levels=TRUE,
                     reorder.vars=FALSE) {
     frloc <- factorize(x,frloc)
@@ -195,6 +195,7 @@ mkBlist <- function(x,frloc, drop.unused.levels=TRUE,
     list(ff = ff, sm = sm, nl = nl, cnms = colnames(mm))
 }
 
+##' @noRd
 ##' @param bars result of findbars
 barnames <- function(bars) vapply(bars, function(x) deparse1(x[[3]]), "")
 
