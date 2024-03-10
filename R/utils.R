@@ -239,9 +239,15 @@ expandAllGrpVar <- function(bb) {
 
 ## sugar: this returns the operator, whether ~ or something else
 #' @export
-head.formula <- head.call <- function(x, ...) {
+head.formula <- function(x, ...) {
     x[[1]]
 }
+
+#' @export
+head.call <- head.formula
+
+#' @export
+head.language <- head.formula
 
 #' @export
 ## sugar: we can call head on a symbol and get back the symbol
