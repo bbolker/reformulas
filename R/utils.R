@@ -758,3 +758,38 @@ sub_specials <- function (term,
     }
     term
 }
+
+
+
+##' Substitute the '+' function for the '|' and '||' function in a mixed-model
+##' formula.  This provides a formula suitable for the current
+##' model.frame function.
+##'
+##' @title "Substitute bars"
+##' @param term a mixed-model formula
+##' @return the formula with all |  and || operators replaced by +
+##' @section Note: This function is called recursively on individual
+##' terms in the model, which is why the argument is called \code{term} and not
+##' a name like \code{form}, indicating a formula.
+##' @examples
+##' subbars(Reaction ~ Days + (Days|Subject)) ## => Reaction ~ Days + (Days + Subject)
+##' @seealso \code{\link{formula}}, \code{\link{model.frame}}, \code{\link{model.matrix}}.
+##' @family utilities
+##' @keywords models utilities
+##' @export
+subbars <- function(term) sub_specials(term, specials = c("|", "||"), keep_args = c(2L, 2L))
+## subbars <- function(term)
+## {
+##     if (is.name(term) || !is.language(term)) return(term)
+##     if (length(term) == 2) {
+##         term[[2]] <- subbars(term[[2]])
+##         return(term)
+##     }
+##     stopifnot(length(term) >= 3)
+##     if (is.call(term) && term[[1]] == as.name('|'))
+##         term[[1]] <- as.name('+')
+##     if (is.call(term) && term[[1]] == as.name('||'))
+##         term[[1]] <- as.name('+')
+##     for (j in 2:length(term)) term[[j]] <- subbars(term[[j]])
+##     term
+## }
