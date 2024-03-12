@@ -11,6 +11,12 @@ RHSForm(form, as.form = FALSE)
 
 \item{as.form}{(logical) return a formula (TRUE) or as a call/symbolic object (FALSE) ?}
 }
+\value{
+a \code{language} object
+}
 \description{
 extract right-hand side of a formula
+}
+\examples{
+RHSForm(y ~ x + (1|g))
 }

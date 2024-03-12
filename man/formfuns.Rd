@@ -122,8 +122,6 @@ expandAllGrpVar(quote(1|f/g/h))
 expandAllGrpVar(quote(1|f*g))
 expandAllGrpVar(quote(1|f+g))
 expandAllGrpVar(quote(a+b|f+g+h*i))
-## wish list ... this should be (1|a) + (1|a:b) + (1|a:b:c) + (1|a:b:d) ...
-## expandAllGrpVar(quote(a/b/(c+d)))
 expandAllGrpVar(quote(s(log(d), k = 4)))
 expandAllGrpVar(quote(s(log(d+1))))
 splitForm(quote(us(x,n=2)))

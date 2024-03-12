@@ -37,6 +37,9 @@ expandDoubleVert <- function(term) {
 #' extract right-hand side of a formula
 #' @param form a formula object
 #' @param as.form (logical) return a formula (TRUE) or as a call/symbolic object (FALSE) ?
+#' @examples
+#' RHSForm(y ~ x + (1|g))
+#' @return a \code{language} object
 #' @export
 RHSForm <- function(form, as.form=FALSE) {
     if (!as.form) return(form[[length(form)]])
@@ -198,13 +201,13 @@ expandGrpVar <- function(f) {
 ##' expandAllGrpVar(quote(1|f*g))
 ##' expandAllGrpVar(quote(1|f+g))
 ##' expandAllGrpVar(quote(a+b|f+g+h*i))
-##' ## wish list ... this should be (1|a) + (1|a:b) + (1|a:b:c) + (1|a:b:d) ...
-##' ## expandAllGrpVar(quote(a/b/(c+d)))
 ##' expandAllGrpVar(quote(s(log(d), k = 4)))
 ##' expandAllGrpVar(quote(s(log(d+1))))
 ##' @importFrom utils head
 ##' @rdname formfuns
 ##' @export
+## wish list ... this should be (1|a) + (1|a:b) + (1|a:b:c) + (1|a:b:d) ...
+## expandAllGrpVar(quote(a/b/(c+d)))
 expandAllGrpVar <- function(bb) {
     ## Return the list of expanded terms (/, *, ?)
     if (!is.list(bb))
@@ -570,6 +573,7 @@ isAnyArgSpecial <- function(term, specials = findReTrmClasses()) {
 #' Detect whether there are any 'specials' in a formula term
 #' @param term formula term
 #' @param specials values to detect
+#' @return logical value
 #' @export
 ## This could be in principle be fooled by a term with a matching name
 ## but this case is caught in noSpecials_() where we test for length>1
@@ -696,10 +700,12 @@ replaceForm <- function(term,target,repl) {
 
 
 ##' Drop 'specials' from a formula
-##' @param term a term or formula
+##' @param term a term or formula or list thereof
 ##' @param specials function types to drop
+##' @return a \code{call} or \code{language} object (or list) with specials removed
 ##' @examples
 ##' no_specials(findbars_x(~ 1 + s(x) + (f|g) + diag(x|y)))
+##' no_specials(~us(f|g))
 ##' @export
 no_specials <- function(term, specials = c("|", "||", "s")) {
     if (is.list(term)) {

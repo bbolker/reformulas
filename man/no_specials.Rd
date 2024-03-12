@@ -7,13 +7,17 @@
 no_specials(term, specials = c("|", "||", "s"))
 }
 \arguments{
-\item{term}{a term or formula}
+\item{term}{a term or formula or list thereof}
 
 \item{specials}{function types to drop}
+}
+\value{
+a \code{call} or \code{language} object (or list) with specials removed
 }
 \description{
 Drop 'specials' from a formula
 }
 \examples{
 no_specials(findbars_x(~ 1 + s(x) + (f|g) + diag(x|y)))
+no_specials(~us(f|g))
 }

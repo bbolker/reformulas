@@ -1,3 +1,3 @@
-# reformulas 0.0.2
+# reformulas 0.2.0
 
 Initial release

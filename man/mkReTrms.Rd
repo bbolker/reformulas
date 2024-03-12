@@ -2,7 +2,7 @@
 % Please edit documentation in R/mkReTrms.R
 \name{mkReTrms}
 \alias{mkReTrms}
-\title{Create Z, Lambda, Lind, etc.}
+\title{Create list of structures needed for models with random effects}
 \usage{
 mkReTrms(
   bars,
@@ -24,11 +24,11 @@ mkReTrms(
 
 \item{reorder.vars}{arrange columns of individual random effects terms in alphabetical order?}
 
-\item{calc.lambdat}{(logical) compute Lambdat and Lind components? (At present these components
-are needed for \code{lme4} machinery but not for \code{glmmTMB}, and may be large in some cases)}
+\item{calc.lambdat}{(logical) compute \code{Lambdat} and \code{Lind} components? (At present these components
+are needed for \code{lme4} machinery but not for \code{glmmTMB}, and may be large in some cases; see Bates \emph{et al.} 2015}
 }
 \value{
-a list with co`mponents
+a list with components
 \item{Zt}{transpose of the sparse model matrix for the random effects}
 \item{Ztlist}{list of components of the transpose of the
 random-effects model matrix, separated by random-effects term}
@@ -54,6 +54,9 @@ From the result of \code{\link{findbars}} applied to a model formula and
 and the evaluation frame, create the model matrix, etc. associated with
 random-effects terms.  See the description of the returned value for a
 detailed list.
+}
+\references{
+\insertRef{lme4}{reformulas})
 }
 \seealso{
 Other utilities: 

@@ -3,15 +3,15 @@
 ##' random-effects terms.  See the description of the returned value for a
 ##' detailed list.
 ##'
-##' @title Create Z, Lambda, Lind, etc.
+##' @title Create list of structures needed for models with random effects
 ##' @param bars a list of parsed random-effects terms
 ##' @param fr a model frame in which to evaluate these terms
 ##' @param drop.unused.levels (logical) drop unused factor levels?
 ##' @param reorder.terms arrange random effects terms in decreasing order of number of groups (factor levels)?
 ##' @param reorder.vars arrange columns of individual random effects terms in alphabetical order?
-##' @param calc.lambdat (logical) compute Lambdat and Lind components? (At present these components
-##' are needed for \code{lme4} machinery but not for \code{glmmTMB}, and may be large in some cases)
-##' @return a list with co`mponents
+##' @param calc.lambdat (logical) compute \code{Lambdat} and \code{Lind} components? (At present these components
+##' are needed for \code{lme4} machinery but not for \code{glmmTMB}, and may be large in some cases; see Bates \emph{et al.} 2015
+##' @return a list with components
 ##' \item{Zt}{transpose of the sparse model matrix for the random effects}
 ##'  \item{Ztlist}{list of components of the transpose of the
 ##'    random-effects model matrix, separated by random-effects term}
@@ -34,7 +34,9 @@
 ##' @importFrom Matrix sparseMatrix drop0
 ## (no methods found in package 'Matrix' for rbind ... ???)
 ##' @importMethodsFrom Matrix coerce t diag
+##' @importFrom Rdpack reprompt
 ##' @family utilities
+##' @references \insertRef{lme4}{reformulas})
 ##' @export
 mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
                      reorder.terms=TRUE,

@@ -11,6 +11,9 @@ anySpecial(term, specials = findReTrmClasses())
 
 \item{specials}{values to detect}
 }
+\value{
+logical value
+}
 \description{
 Detect whether there are any 'specials' in a formula term
 }
