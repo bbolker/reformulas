@@ -126,15 +126,19 @@ sumTerms <- function(termList) {
 #' @param f a formula
 #' @param response include response variable?
 #' @param bracket bracket-protect terms?
+#' @param doublevert_split (logical) TRUE for lme4 back-compatibility; FALSE to make double vertical bars into \code{diag()} eterms
 #' @rdname formfuns
 #' @examples
 #' reOnly(~ 1 + x + y + (1|f) + (1|g))
 #' @export
-reOnly <- function(f, response=FALSE,bracket=TRUE) {
+reOnly <- function(f, response=FALSE, bracket=TRUE, doublevert_split = TRUE) {
     flen <- length(f)
     f2 <- f[[2]]
-    if (bracket)
-        f <- lapply(findbars(f), makeOp, quote(`(`)) ## bracket-protect terms
+    if (bracket) {
+        xdv <- if (doublevert_split) "split" else "diag_special"
+        fb <- findbars_x(f, expand_doublevert_method = xdv)
+        f <- lapply(fb, makeOp, quote(`(`)) ## bracket-protect terms
+    }
     f <- sumTerms(f)
     if (response && flen==3) {
         form <- makeOp(f2, f, quote(`~`))

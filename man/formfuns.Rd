@@ -24,7 +24,7 @@ RHSForm(formula) <- value
 
 sumTerms(termList)
 
-reOnly(f, response = FALSE, bracket = TRUE)
+reOnly(f, response = FALSE, bracket = TRUE, doublevert_split = TRUE)
 
 makeOp(x, y, op = NULL)
 
@@ -69,6 +69,8 @@ replaceForm(term, target, repl)
 \item{response}{include response variable?}
 
 \item{bracket}{bracket-protect terms?}
+
+\item{doublevert_split}{(logical) TRUE for lme4 back-compatibility; FALSE to make double vertical bars into \code{diag()} eterms}
 
 \item{x}{formula}
 
