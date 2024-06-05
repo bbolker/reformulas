@@ -1,6 +1,6 @@
 Package: reformulas
 Title: Machinery for Processing Random Effect Formulas
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: 
     person(given = "Ben",
            family = "Bolker",

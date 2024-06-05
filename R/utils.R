@@ -8,7 +8,7 @@ if (getRversion() < "4.0.0") {
         paste(deparse(expr, width.cutoff, ...), collapse = collapse)
     }
 }
-
+ 
 #' expand double-bar RE notation by splitting
 #' @param term a formula term
 #' @rdname formfuns
@@ -32,6 +32,50 @@ expandDoubleVert <- function(term) {
                )
            })
     return(res)
+}
+
+##' From the right hand side of a formula for a mixed-effects model,
+##' expand terms with the double vertical bar operator
+##' into separate, independent random effect terms.
+##'
+##' @title Expand terms with \code{'||'} notation into separate \code{'|'} terms
+##' @seealso \code{\link{formula}}, \code{\link{model.frame}}, \code{\link{model.matrix}}.
+##' @param term a mixed-model formula
+##' @return the modified term
+##' @family utilities
+##' @keywords models utilities
+##' @export
+expandDoubleVerts <- function(term)
+{
+    expandDoubleVert <- function(term) {
+        frml <- formula(substitute(~x,list(x=term[[2]])))
+        ## FIXME: do this without paste and deparse if possible!
+        ## need term.labels not all.vars to capture interactions too:
+        newtrms <- paste0("0+", attr(terms(frml), "term.labels"))
+        if(attr(terms(frml), "intercept")!=0)
+            newtrms <- c("1", newtrms)
+
+        as.formula(paste("~(",
+                         paste(vapply(newtrms, function(trm)
+                                      paste0(trm, "|", deparse(term[[3]])), ""),
+                               collapse=")+("), ")"))[[2]]
+    }
+
+    if (!is.name(term) && is.language(term)) {
+        if (term[[1]] == as.name("(")) {
+            term[[2]] <- expandDoubleVerts(term[[2]])
+        }
+        stopifnot(is.call(term))
+        if (term[[1]] == as.name('||'))
+            return( expandDoubleVert(term) )
+        ## else :
+        term[[2]] <- expandDoubleVerts(term[[2]])
+        if (length(term) != 2) {
+            if(length(term) == 3)
+                term[[3]] <- expandDoubleVerts(term[[3]])
+        }
+    }
+    term
 }
 
 #' extract right-hand side of a formula
@@ -799,3 +843,58 @@ subbars <- function(term) sub_specials(term, specials = c("|", "||"), keep_args 
 ##     for (j in 2:length(term)) term[[j]] <- subbars(term[[j]])
 ##     term
 ## }
+
+
+##' Does every level of f1 occur in conjunction with exactly one level
+##' of f2? The function is based on converting a triplet sparse matrix
+##' to a compressed column-oriented form in which the nesting can be
+##' quickly evaluated.
+##'
+##' @title Is f1 nested within f2?
+##'
+##' @param f1 factor 1
+##' @param f2 factor 2
+##'
+##' @return TRUE if factor 1 is nested within factor 2
+##' @examples
+##' if (requireNamespace("lme4")) {
+##'    data("Pastes", package = "lme4")
+##'    with(Pastes, isNested(cask, batch))   ## => FALSE
+##'    with(Pastes, isNested(sample, batch))  ## => TRUE
+##' }
+##' @importFrom methods as new
+##' @export
+isNested <- function(f1, f2)
+{
+    f1 <- as.factor(f1)
+    f2 <- as.factor(f2)
+    stopifnot(length(f1) == length(f2))
+    k <- length(levels(f1))
+    sm <- as(new("ngTMatrix",
+                 i = as.integer(f2) - 1L,
+                 j = as.integer(f1) - 1L,
+                 Dim = c(length(levels(f2)), k)),
+             "CsparseMatrix")
+    all(sm@p[2:(k+1L)] - sm@p[1:k] <= 1L)
+}
+
+subnms <- function(form, nms) {
+    ## Recursive function applied to individual terms
+    sbnm <- function(term)
+    {
+        if (is.name(term)) {
+            if (any(term == nms)) 0 else term
+        } else switch(length(term),
+               term, ## 1
+           {   ## 2
+               term[[2]] <- sbnm(term[[2]])
+               term
+           },
+           {   ## 3
+               term[[2]] <- sbnm(term[[2]])
+               term[[3]] <- sbnm(term[[3]])
+               term
+           })
+    }
+    sbnm(form)
+}

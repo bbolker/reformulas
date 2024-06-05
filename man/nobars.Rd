@@ -2,9 +2,12 @@
 % Please edit documentation in R/nobars.R
 \name{nobars}
 \alias{nobars}
+\alias{nobars_}
 \title{Omit terms separated by vertical bars in a formula}
 \usage{
 nobars(term)
+
+nobars_(term)
 }
 \arguments{
 \item{term}{the right-hand side of a mixed-model formula}
@@ -29,6 +32,7 @@ nobars(Reaction ~ Days + (Days|Subject)) ## => Reaction ~ Days
 \code{\link{formula}}, \code{\link{model.frame}}, \code{\link{model.matrix}}.
 
 Other utilities: 
+\code{\link{expandDoubleVerts}()},
 \code{\link{mkReTrms}()},
 \code{\link{subbars}()}
 }

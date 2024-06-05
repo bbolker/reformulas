@@ -31,6 +31,8 @@ nobars <- function(term) {
     nb
 }
 
+#' @rdname nobars
+#' @export
 nobars_ <- function(term)
 {
     if (!anyBars(term)) return(term)

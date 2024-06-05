@@ -30,6 +30,7 @@ subbars(Reaction ~ Days + (Days|Subject)) ## => Reaction ~ Days + (Days + Subjec
 \code{\link{formula}}, \code{\link{model.frame}}, \code{\link{model.matrix}}.
 
 Other utilities: 
+\code{\link{expandDoubleVerts}()},
 \code{\link{mkReTrms}()},
 \code{\link{nobars}()}
 }

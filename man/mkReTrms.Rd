@@ -60,6 +60,7 @@ detailed list.
 }
 \seealso{
 Other utilities: 
+\code{\link{expandDoubleVerts}()},
 \code{\link{nobars}()},
 \code{\link{subbars}()}
 }
