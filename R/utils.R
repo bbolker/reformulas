@@ -108,6 +108,10 @@ RHSForm <- function(form, as.form=FALSE) {
 #' @param formula a formula object
 #' @param value replacement value for RHS
 #' @rdname formfuns
+#' @examples
+#' f <- y ~ 1 + x
+#' RHSForm(f) <- quote(2+x^2)
+#' print(f)
 #' @export
 `RHSForm<-` <- function(formula,value) {
     formula[[length(formula)]] <- value
@@ -346,7 +350,8 @@ findbars_x <- function(term,
                 expand_doublevert_method = c("diag_special", "split")) {
 
     expand_doublevert_method <- match.arg(expand_doublevert_method)
-    
+
+    term <- RHSForm(term, as.form = TRUE)
     ds <- if (is.null(default.special)) {
               NULL
           } else {
