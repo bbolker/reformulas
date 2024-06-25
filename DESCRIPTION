@@ -14,6 +14,5 @@ Encoding: UTF-8
 Imports: stats, methods, Matrix, Rdpack
 RdMacros: Rdpack
 Suggests: lme4, tinytest
-LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
