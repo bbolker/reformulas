@@ -308,10 +308,6 @@ head.language <- head.formula
 ## sugar: we can call head on a symbol and get back the symbol
 head.name <- function(x, ...) { x }
 
-## TEST: does this work as a drop-in replacement for lme4::findbars
-## if default.special = NULL?
-## (would replace current expandDoubleVerts machinery)
-
 ##' Find and process random effects terms
 ##'
 ##' @param term a formula or piece of a formula
@@ -351,7 +347,10 @@ findbars_x <- function(term,
 
     expand_doublevert_method <- match.arg(expand_doublevert_method)
 
-    term <- RHSForm(term, as.form = TRUE)
+    ## drop RHS from two-sided formula
+    if (length(term) == 3 && identical(term[[1]], quote(`~`))) {
+        term <- RHSForm(term, as.form = TRUE)
+    }
     ds <- if (is.null(default.special)) {
               NULL
           } else {
