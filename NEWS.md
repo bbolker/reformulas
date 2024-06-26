@@ -2,6 +2,7 @@
 
 * `findbars` now only looks on the RHS of a formula (restore back-compatibility in cases where a term with `|` occurs on the LHS, as in the `tramME` package)
 * add tests (`tinytest`)
+* fix `noSpecials` bug (complex LHS and empty RHS after eliminating specials)
 
 # reformulas 0.3.0
 

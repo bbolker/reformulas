@@ -555,11 +555,13 @@ splitForm <- function(formula,
 ##' noSpecials(y~us+1)  ## should *not* delete unless head of a function
 ##' noSpecials(~us(1|f)+1)   ## should work on a one-sided formula!
 ##' noSpecials(~s(stuff) + a + b, specials = "s")
+##' noSpecials(cbind(b1, 20-b1) ~ s(x, bs = "tp"))
 ##' @export
 ##' @keywords internal
 noSpecials <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClasses()) {
     nospec <- noSpecials_(term, delete=delete, debug=debug, specials = specials)
-    if (inherits(term, "formula") && length(term) == 3 && is.symbol(nospec)) {
+    empty_RHS <- inherits(term, "formula") && length(term) == 3 && !identical(nospec[[1]], quote(`~`))
+    if (empty_RHS) {
         ## called with two-sided RE-only formula:
         ##    construct response~1 formula
         as.formula(substitute(R~1,list(R=nospec)),
@@ -589,9 +591,12 @@ noSpecials_ <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClas
                    noSpecials_(term[[3]], delete=delete, debug=debug, specials = specials)
                } else NULL
         if (is.null(nb2)) {
+            if (debug) cat("term[[2]] NULL, returning noSpecials_(term[[3]])\n")
             return(nb3)
         } else if (is.null(nb3)) {
+            if (debug) cat("term[[3]] NULL\n")
             if (length(term)==2 && identical(term[[1]], quote(`~`))) { ## special case for one-sided formula
+                if (debug) cat("one-sided formula special case\n")
                 term[[2]] <- nb2
                 return(term)
             } else {
