@@ -560,7 +560,7 @@ splitForm <- function(formula,
 ##' @keywords internal
 noSpecials <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClasses()) {
     nospec <- noSpecials_(term, delete=delete, debug=debug, specials = specials)
-    empty_RHS <- inherits(term, "formula") && length(term) == 3 && !identical(nospec[[1]], quote(`~`))
+    empty_RHS <- inherits(term, "formula") && length(term) == 3 && (is.symbol(nospec) || !identical(nospec[[1]], quote(`~`)))
     if (empty_RHS) {
         ## called with two-sided RE-only formula:
         ##    construct response~1 formula
