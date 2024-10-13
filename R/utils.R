@@ -630,12 +630,33 @@ isAnyArgSpecial <- function(term, specials = findReTrmClasses()) {
 #' Detect whether there are any 'specials' in a formula term
 #' @param term formula term
 #' @param specials values to detect
+#' @param fast (logical) use quick (syntactic) test for presence of specials?
 #' @return logical value
+#' @examples
+#' ## should only detect s as the head of a function, s(...)
+#' anySpecial(~diag(1))
+#' anySpecial(~diag)
+#' anySpecial(~diag[[1]])
+#' anySpecial(~diag[1])
+#' anySpecial(~s)
+#' anySpecial(~s(hello+goodbye,whatever))
 #' @export
-## This could be in principle be fooled by a term with a matching name
-## but this case is caught in noSpecials_() where we test for length>1
-anySpecial <- function(term, specials=findReTrmClasses()) {
-    any(specials %in% all.names(term))
+anySpecial <- function(term, specials=findReTrmClasses(), fast = FALSE) {
+    if (fast) return(any(specials %in% all.names(term)))
+    has_s <- FALSE
+    as2 <- function(expr) {
+        if (length(expr) == 1) return(NULL)  ## we've hit bottom
+        for (ss in specials) {
+            if (identical(expr[[1]], as.name(ss))) {
+                assign("has_s", TRUE, environment(as2))
+                break
+            }
+        }
+        if (has_s) return(NULL)  ## short-circuit
+        lapply(expr[-1], as2)
+    }
+    as2(term)  ## run function for side effect
+    return(has_s)
 }
 
 ##' test whether a formula contains a particular element?

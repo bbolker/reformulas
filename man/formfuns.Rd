@@ -114,6 +114,9 @@ are applicable: the results are expanded into a list of independent (additive)
 random effect terms
 }
 \examples{
+f <- y ~ 1 + x
+RHSForm(f) <- quote(2+x^2)
+print(f)
 reOnly(~ 1 + x + y + (1|f) + (1|g))
 addForm0(y~x,~1)
 addForm0(~x,~y)

@@ -65,6 +65,7 @@ noSpecials(y~us(1|f), debug=TRUE)
 noSpecials(y~us+1)  ## should *not* delete unless head of a function
 noSpecials(~us(1|f)+1)   ## should work on a one-sided formula!
 noSpecials(~s(stuff) + a + b, specials = "s")
+noSpecials(cbind(b1, 20-b1) ~ s(x, bs = "tp"))
 }
 \author{
 Steve Walker

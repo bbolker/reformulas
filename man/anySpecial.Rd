@@ -4,16 +4,27 @@
 \alias{anySpecial}
 \title{Detect whether there are any 'specials' in a formula term}
 \usage{
-anySpecial(term, specials = findReTrmClasses())
+anySpecial(term, specials = findReTrmClasses(), fast = FALSE)
 }
 \arguments{
 \item{term}{formula term}
 
 \item{specials}{values to detect}
+
+\item{fast}{(logical) use quick (syntactic) test for presence of specials?}
 }
 \value{
 logical value
 }
 \description{
 Detect whether there are any 'specials' in a formula term
+}
+\examples{
+## should only detect s as the head of a function, s(...)
+anySpecial(~diag(1))
+anySpecial(~diag)
+anySpecial(~diag[[1]])
+anySpecial(~diag[1])
+anySpecial(~s)
+anySpecial(~s(hello+goodbye,whatever))
 }
