@@ -274,9 +274,12 @@ expandAllGrpVar <- function(bb) {
 esfun <- function(x) {
     if (length(x)==1 || !anySpecial(x, "|")) return(x)
     if (length(x)==2) {
+        ## if (head(x)==as.name("(")) {
+        ##     return(makeOp(esfun(x[[2]]), quote(`(`)))
+        ## }
         ## unary operator such as diag(1|f/g)
         ## return diag(...) + diag(...) + ...
-        return(lapply(esfun(x[[2]]),  makeOp, y=head(x)))
+        return(lapply(esfun(x[[2]]),  makeOp, y=x[[1]]))
     }
     if (length(x)==3) {
         ## binary operator
