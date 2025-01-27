@@ -8,7 +8,11 @@ if (getRversion() < "4.0.0") {
         paste(deparse(expr, width.cutoff, ...), collapse = collapse)
     }
 }
- 
+
+## FIXME: refactor! lmer::lFormula calls expandDoubleVerts(),
+##  but also calls findbars -> findbars_x -> expandDoubleVert
+## maybe expandDoubleVerts
+
 #' expand double-bar RE notation by splitting
 #' @param term a formula term
 #' @rdname formfuns
@@ -34,6 +38,7 @@ expandDoubleVert <- function(term) {
     return(res)
 }
 
+## note: only used by lme4
 ##' From the right hand side of a formula for a mixed-effects model,
 ##' expand terms with the double vertical bar operator
 ##' into separate, independent random effect terms.
@@ -49,12 +54,15 @@ expandDoubleVerts <- function(term)
 {
     expandDoubleVert <- function(term) {
         frml <- formula(substitute(~x,list(x=term[[2]])))
-        ## FIXME: do this without paste and deparse if possible!
+
         ## need term.labels not all.vars to capture interactions too:
         newtrms <- paste0("0+", attr(terms(frml), "term.labels"))
         if(attr(terms(frml), "intercept")!=0)
             newtrms <- c("1", newtrms)
 
+        ## FIXME: do this without paste and deparse if possible!
+        ## see expandDoubleVert()
+        
         as.formula(paste("~(",
                          paste(vapply(newtrms, function(trm)
                                       paste0(trm, "|", deparse(term[[3]])), ""),
@@ -385,11 +393,8 @@ findbars_x <- function(term,
                                      op = quote(`|`)),
                               as.name("diag")))
             }
-            if (expand_doublevert_method == "split") {
-                ## need to return *multiple* elements
-                return(lapply(expandDoubleVert(term), fbx))
-            } 
-            stop("unknown doublevert method ", expand_doublevert_method)
+            ## expand_double_vert_method == "split" if we get here
+            return(lapply(expandDoubleVert(term), fbx))
         }
         if (head(term) == as.name("(")) {  ## found (...)
             if (debug) cat("paren term:",deparse(term),"\n")
