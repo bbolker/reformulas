@@ -74,7 +74,7 @@ mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
                                             # model matrix per term
       nc <- lengths(cnms)                   # no. of columns per term
                                             # (in lmer jss:  p_i)
-  if (calc_lambdat)
+  if (calc.lambdat)
       nth <- as.integer((nc * (nc+1))/2)    # no. of parameters per term
                                             # (in lmer jss:  ??)
       nb <- nc * nl                         # no. of random effects per term
@@ -85,7 +85,7 @@ mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
                    sum(nb),q))
   }
   boff <- cumsum(c(0L, nb))             # offsets into b
-  if (calc_lambdat) thoff <- cumsum(c(0L, nth))           # offsets into theta
+  if (calc.lambdat) thoff <- cumsum(c(0L, nth))           # offsets into theta
   ## FIXME: should this be done with cBind and avoid the transpose
   ## operator?  In other words should Lambdat be generated directly
   ## instead of generating Lambda first then transposing?
@@ -112,7 +112,7 @@ mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
       Lambdat <- Lind <- NULL
   }
   thet <- NULL
-  if (calc_lambdat)  thet <- numeric(sum(nth))
+  if (calc.lambdat)  thet <- numeric(sum(nth))
   ll <- list(Zt = drop0(Zt), theta = thet, Lind = Lind,
              Gp = unname(c(0L, cumsum(nb))))
   ## lower bounds on theta elements are 0 if on diagonal, else -Inf
