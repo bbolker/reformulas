@@ -179,7 +179,9 @@ mkBlist <- function(x,frloc, drop.unused.levels=TRUE,
       !is.null(cc) && is(cc, "sparseMatrix")
     }
     any.sparse.contrasts <- any(vapply(frloc, has.sparse.contrasts, FUN.VALUE = TRUE))
-    mMatrix <- if (!any.sparse.contrasts) model.matrix else sparse.model.matrix
+    ## mMatrix <- if (!any.sparse.contrasts) model.matrix else sparse.model.matrix
+    ## HACK: always use sparse contrasts
+    mMatrix <- sparse.model.matrix
     mm <- mMatrix(eval(substitute( ~ foo, list(foo = x[[2]]))), frloc)
     if (reorder.vars) {
         mm <- mm[colSort(colnames(mm)),]
