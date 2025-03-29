@@ -1,5 +1,7 @@
 # reformulas 0.4.0
 
+* `expandAllGrpVars` etc. expand complex terms (e.g.
+* `anySpecials` now handles "naked" specials (e.g. `s` rather than `s(...)`) properly
 * `findbars` now only looks on the RHS of a formula (restore back-compatibility in cases where a term with `|` occurs on the LHS, as in the `tramME` package)
 * add tests (`tinytest`)
 * fix `noSpecials` bug (complex LHS and empty RHS after eliminating specials)

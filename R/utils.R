@@ -274,31 +274,35 @@ expandAllGrpVar <- function(bb) {
         expandAllGrpVar(list(bb))
     else {
         for (i in seq_along(bb)) {
-            esfun <- function(x) {
-                if (length(x)==1 || !anySpecial(x, "|")) return(x)
-                if (length(x)==2) {
-                        ## unary operator such as diag(1|f/g)
-                        ## return diag(...) + diag(...) + ...
-                        return(lapply(esfun(x[[2]]),
-                                      makeOp, y=head(x)))
-                }
-                if (length(x)==3) {
-                    ## binary operator
-                    if (x[[1]]==quote(`|`)) {
-                        return(lapply(expandGrpVar(x[[3]]),
-                                      makeOp, x=x[[2]], op=quote(`|`)))
-                    } else {
-                        return(x)
-                        ## return(x) would be nice, but in that case x gets evaluated
-                        ## return(setNames(makeOp(esfun(x[[2]]), esfun(x[[3]]),
-                        ##  op=x[[1]]), names(x)))
-                    }
-                }
-            } ## esfun def.
             return(unlist(lapply(bb,esfun)))
         } ## loop over bb
     }
 }
+
+esfun <- function(x) {
+    if (length(x)==1 || !anySpecial(x, "|")) return(x)
+    if (length(x)==2) {
+        ## if (head(x)==as.name("(")) {
+        ##     return(makeOp(esfun(x[[2]]), quote(`(`)))
+        ## }
+        ## unary operator such as diag(1|f/g)
+        ## return diag(...) + diag(...) + ...
+        return(lapply(esfun(x[[2]]),  makeOp, y=x[[1]]))
+    }
+    if (length(x)==3) {
+        ## binary operator
+        if (x[[1]]==quote(`|`)) {
+            return(lapply(expandGrpVar(x[[3]]),
+                          makeOp, x=x[[2]], op=quote(`|`)))
+        } else {
+            return(x)
+            ## return(x) would be nice, but in that case x gets evaluated
+            ## return(setNames(makeOp(esfun(x[[2]]), esfun(x[[3]]),
+            ##  op=x[[1]]), names(x)))
+        }
+    }
+} ## esfun def.
+
 
 ## sugar: this returns the operator, whether ~ or something else
 #' @export
@@ -662,6 +666,19 @@ anySpecial <- function(term, specials=findReTrmClasses(), fast = FALSE) {
     }
     as2(term)  ## run function for side effect
     return(has_s)
+}
+
+## also see:
+## https://stackoverflow.com/questions/79093440/is-there-a-way-to-tell-if-the-formula-contains-specific-function-inside/79094196#79094196
+##
+
+rfun <- function(expr) {
+    if (length(expr) == 1) return(FALSE)  ## we've hit bottom
+    if (identical(expr[[1]], quote(s))) return(TRUE)
+    for (el in as.list(expr[-1])) {
+        if (rfun(el)) return(TRUE)
+    }
+    return(FALSE)
 }
 
 ##' test whether a formula contains a particular element?
