@@ -36,3 +36,13 @@ expect_equal(
     mkReTrms(fb, mf),
     mkReTrms(fb, mf, sparse = TRUE)
 )
+
+ngroup <- 5
+ntime <- 500000
+n <- ngroup * ntime
+d <- data.frame(group=gl(ngroup, ntime), times=glmmTMB::numFactor(1:ntime), y=rnorm(n))
+form <- y ~ (times+0|group)  ## have already run noSpecials/sub_specials
+mf <- model.frame(subbars(form), data = d)
+## makes a 400 Mb object ...
+tt <- mkReTrms(findbars(form), mf, calc.lambdat = FALSE, sparse = TRUE)
+rm(tt)
