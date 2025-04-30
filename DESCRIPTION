@@ -13,6 +13,6 @@ License: GPL-3
 Encoding: UTF-8
 Imports: stats, methods, Matrix, Rdpack
 RdMacros: Rdpack
-Suggests: lme4, tinytest
+Suggests: lme4, tinytest, glmmTMB
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2.9000
