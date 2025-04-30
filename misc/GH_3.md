@@ -43,5 +43,7 @@ debug(lme4:::mkBlist)
 ee <- eval(substitute(~foo, list(foo = x[[2]])))
 ## may have sparse contrasts; model.matrix.default **will not work** with sparse contrast matrices
 ## call in nrows? https://github.com/r-devel/r-svn/blob/2c0916d455958379652d0debb71c9cab72a912f4/src/main/util.c#L81-L94
-## where do sparse contrast matrices come from?
+## where do sparse contrast matrices come from in the first place? are they ever useful?
+## this is from 'sparse option for mkNewReTrms`:
+##   https://github.com/lme4/lme4/commit/9a3cbe153f8fb26ac5282e16c55fde71c8574611
 ```

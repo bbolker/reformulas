@@ -10,7 +10,8 @@ mkReTrms(
   drop.unused.levels = TRUE,
   reorder.terms = TRUE,
   reorder.vars = FALSE,
-  calc.lambdat = TRUE
+  calc.lambdat = TRUE,
+  sparse = NULL
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ mkReTrms(
 
 \item{calc.lambdat}{(logical) compute \code{Lambdat} and \code{Lind} components? (At present these components
 are needed for \code{lme4} machinery but not for \code{glmmTMB}, and may be large in some cases; see Bates \emph{et al.} 2015}
+
+\item{sparse}{(logical) set up sparse model matrices?}
 }
 \value{
 a list with components

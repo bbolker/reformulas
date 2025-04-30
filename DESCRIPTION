@@ -1,6 +1,6 @@
 Package: reformulas
 Title: Machinery for Processing Random Effect Formulas
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: 
     person(given = "Ben",
            family = "Bolker",
@@ -15,4 +15,4 @@ Imports: stats, methods, Matrix, Rdpack
 RdMacros: Rdpack
 Suggests: lme4, tinytest
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.2.9000
