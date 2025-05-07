@@ -227,8 +227,11 @@ findReTrmClasses <- function() {
 
 toLang <- function(x) parse(text=x)[[1]]
 
-#' apply
+#' apply operator expansion (e.g. a/b -> a + a:b) to a formula term
+#'
 #' @param f a language object (an atom of a formula)
+#' @export
+#' @examples
 #' expandGrpVar(quote(x*y))
 #' expandGrpVar(quote(x/y))
 expandGrpVar <- function(f) {
