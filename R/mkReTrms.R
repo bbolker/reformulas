@@ -32,6 +32,9 @@
 ##'     (and conversely \code{nb} is \code{diff(Gp)})}
 ##' \item{nl}{names of the terms (in the same order as \code{Zt},
 ##'     i.e. reflecting the \code{reorder.terms} argument)}
+##' @details \code{Lambdat}, \code{Lind}, \code{theta}, \code{lower} are likely to
+##' be useful only for \code{lme4}; the other terms can be generally useful for
+##' constructing mixed-effect models
 ##' @importFrom Matrix sparseMatrix drop0
 ## (no methods found in package 'Matrix' for rbind ... ???)
 ##' @importMethodsFrom Matrix coerce t diag
@@ -39,11 +42,16 @@
 ##' @family utilities
 ##' @references \insertRef{lme4}{reformulas})
 ##' @examples
+##' ## (silly/impractical formula, for illustration only)
 ##' form <- mpg ~ 1 + (1 + hp | cyl) + (1|gear) + (factor(cyl)|gear)
 ##' fr <- model.frame(subbars(form), data = mtcars)
 ##' rterms <- mkReTrms(findbars(form), fr)
 ##' names(rterms)
-##' lengths(rterms$cnms)
+##' ## block sizes (latent variables per block) of each term
+##' (nperblock <- lengths(rterms$cnms))
+##' ## latent variables per term
+##' (nperterm <- diff(rterms$Gp))
+##' with(rterms, identical(unname(nl*nperblock), nperterm))
 ##' @export
 mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
                      reorder.terms=TRUE,

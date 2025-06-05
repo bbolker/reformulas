@@ -58,12 +58,22 @@ and the evaluation frame, create the model matrix, etc. associated with
 random-effects terms.  See the description of the returned value for a
 detailed list.
 }
+\details{
+\code{Lambdat}, \code{Lind}, \code{theta}, \code{lower} are likely to
+be useful only for \code{lme4}; the other terms can be generally useful for
+constructing mixed-effect models
+}
 \examples{
+## (silly/impractical formula, for illustration only)
 form <- mpg ~ 1 + (1 + hp | cyl) + (1|gear) + (factor(cyl)|gear)
 fr <- model.frame(subbars(form), data = mtcars)
 rterms <- mkReTrms(findbars(form), fr)
 names(rterms)
-lengths(rterms$cnms)
+## block sizes (latent variables per block) of each term
+(nperblock <- lengths(rterms$cnms))
+## latent variables per term
+(nperterm <- diff(rterms$Gp))
+with(rterms, identical(unname(nl*nperblock), nperterm))
 }
 \references{
 \insertRef{lme4}{reformulas})
