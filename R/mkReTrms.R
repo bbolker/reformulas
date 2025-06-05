@@ -38,6 +38,12 @@
 ##' @importFrom Rdpack reprompt
 ##' @family utilities
 ##' @references \insertRef{lme4}{reformulas})
+##' @examples
+##' form <- mpg ~ 1 + (1 + hp | cyl) + (1|gear) + (factor(cyl)|gear)
+##' fr <- model.frame(subbars(form), data = mtcars)
+##' rterms <- mkReTrms(findbars(form), fr)
+##' names(rterms)
+##' lengths(rterms$cnms)
 ##' @export
 mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
                      reorder.terms=TRUE,

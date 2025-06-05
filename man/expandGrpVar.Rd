@@ -2,15 +2,17 @@
 % Please edit documentation in R/utils.R
 \name{expandGrpVar}
 \alias{expandGrpVar}
-\title{apply}
+\title{apply operator expansion (e.g. a/b -> a + a:b) to a formula term}
 \usage{
 expandGrpVar(f)
 }
 \arguments{
-\item{f}{a language object (an atom of a formula)
-expandGrpVar(quote(x*y))
-expandGrpVar(quote(x/y))}
+\item{f}{a language object (an atom of a formula)}
 }
 \description{
-apply
+apply operator expansion (e.g. a/b -> a + a:b) to a formula term
+}
+\examples{
+expandGrpVar(quote(x*y))
+expandGrpVar(quote(x/y))
 }

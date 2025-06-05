@@ -58,6 +58,13 @@ and the evaluation frame, create the model matrix, etc. associated with
 random-effects terms.  See the description of the returned value for a
 detailed list.
 }
+\examples{
+form <- mpg ~ 1 + (1 + hp | cyl) + (1|gear) + (factor(cyl)|gear)
+fr <- model.frame(subbars(form), data = mtcars)
+rterms <- mkReTrms(findbars(form), fr)
+names(rterms)
+lengths(rterms$cnms)
+}
 \references{
 \insertRef{lme4}{reformulas})
 }
