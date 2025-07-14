@@ -307,19 +307,19 @@ esfun <- function(x) {
 } ## esfun def.
 
 
+#' @exportS3Method NULL 
 ## sugar: this returns the operator, whether ~ or something else
-#' @export
 head.formula <- function(x, ...) {
     x[[1]]
 }
 
-#' @export
+#' @exportS3Method NULL 
 head.call <- head.formula
 
-#' @export
+#' @exportS3Method NULL 
 head.language <- head.formula
 
-#' @export
+#' @exportS3Method NULL 
 ## sugar: we can call head on a symbol and get back the symbol
 head.name <- function(x, ...) { x }
 
