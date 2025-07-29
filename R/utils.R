@@ -431,6 +431,18 @@ findbars_x <- function(term,
 
 }
 
+##' This is a backward-compatible (and especially lme4-compatible) wrapper for findbars_x, which is more flexible/capable.
+##' It extracts the random effects from a formula.
+##'
+##' @param term a formula or piece of a formula
+##' @examples
+##' findbars(~ 1 + (x + y || g))
+##' findbars(~ 1 + (1 | f) + (1 | g))
+##' findbars(~ 1 + (1|h) + (x + y || g))
+##' findbars(~ 1 + (1|Subject))
+#' findbars(~  1 + (1||Subject))
+##' findbars(~ (1||Subject))
+##' findbars(~ 1 + x)
 ##' @rdname formfuns
 ##' @export
 ## lme4::findbars-compatible
