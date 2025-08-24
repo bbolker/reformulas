@@ -82,6 +82,9 @@ form2 <- y ~ 1 + (1|a) + (1|b) + (1|c) + (1|d)
 rterms2 <- mkReTrms(findbars(form2), dd, reorder.terms = TRUE)
 ## reorder elements into original formula order
 with(rterms2, cnms[order(ord)])
+## reorder splitForm output to match mkReTrms components
+ss <- splitForm(form2)
+ss$reTrmFormulas[rterms2$ord]
 }
 \references{
 \insertRef{lme4}{reformulas})
