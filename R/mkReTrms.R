@@ -32,6 +32,7 @@
 ##'     (and conversely \code{nb} is \code{diff(Gp)})}
 ##' \item{nl}{names of the terms (in the same order as \code{Zt},
 ##'     i.e. reflecting the \code{reorder.terms} argument)}
+##' \item{ord}{an integer vector giving the relationship between the order of the terms in the formula and the terms in the final object (which are ordered by the number of levels in the grouping variable, if \code{reorder.terms} is TRUE)}
 ##' @details \code{Lambdat}, \code{Lind}, \code{theta}, \code{lower} are likely to
 ##' be useful only for \code{lme4}; the other terms can be generally useful for
 ##' constructing mixed-effect models
@@ -41,9 +42,10 @@
 ##' @importFrom Rdpack reprompt
 ##' @family utilities
 ##' @references \insertRef{lme4}{reformulas})
+##' @export
 ##' @examples
 ##' ## (silly/impractical formula, for illustration only)
-##' form <- mpg ~ 1 + (1 + hp | cyl) + (1|gear) + (factor(cyl)|gear)
+##' form <- mpg ~ 1 + (1|gear) + (factor(cyl)|gear) + (1 + hp | carb)
 ##' fr <- model.frame(subbars(form), data = mtcars)
 ##' rterms <- mkReTrms(findbars(form), fr)
 ##' names(rterms)
@@ -52,7 +54,13 @@
 ##' ## latent variables per term
 ##' (nperterm <- diff(rterms$Gp))
 ##' with(rterms, identical(unname(nl*nperblock), nperterm))
-##' @export
+##' ## illustrate reordering of terms
+##' dd <- expand.grid(a = 1:7, b = 1:3, c = 1:5, d = 1:9)
+##' dd$y <- 1
+##' form2 <- y ~ 1 + (1|a) + (1|b) + (1|c) + (1|d)
+##' rterms2 <- mkReTrms(findbars(form2), dd, reorder.terms = TRUE)
+##' ## reorder elements into original formula order
+##' with(rterms2, cnms[order(ord)])
 mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
                      reorder.terms=TRUE,
                      reorder.vars=FALSE,
@@ -71,6 +79,7 @@ mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
                                         # (in lmer jss:  \ell_i)
       
       ## order terms stably by decreasing number of levels in the factor
+      ord <- seq_along(nl)
       if (reorder.terms) {
           if (any(diff(nl) > 0)) {
               ord <- rev(order(nl))
@@ -155,6 +164,7 @@ mkReTrms <- function(bars, fr, drop.unused.levels=TRUE,
   ll$cnms <- cnms
   ll$Ztlist <- Ztlist
   ll$nl <- nl
+  ll$ord <- ord
   ll
 } ## {mkReTrms}
 

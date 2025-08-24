@@ -44,3 +44,11 @@ if (requireNamespace("lme4") && requireNamespace("glmmTMB")) {
     tt <- mkReTrms(findbars(form), mf, calc.lambdat = FALSE, sparse = TRUE)
     rm(tt)
 }
+
+dd$y <- 1
+dd <- expand.grid(a = 1:7, b = 1:3, c = 1:5, d = 1:9)
+form2 <- y ~ 1 + (1|a) + (1|b) + (1|c) + (1|d)
+rterms_ord <- mkReTrms(findbars(form2), dd, reorder.terms = TRUE)
+rterms_noord <- mkReTrms(findbars(form2), dd, reorder.terms = FALSE)
+## reorder elements into original formula order
+expect_equal(rterms_noord$cnms, with(rterms_ord, cnms[order(ord)]))

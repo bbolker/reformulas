@@ -1,4 +1,9 @@
-# reformulas 0.4.1
+# reformulas 0.4.2
+
+* add `ord` to `mkReTrms` output, for re-ordering terms back to original formula order
+* unexported `head.*` methods, to avoid conflicts with other packages
+
+# reformulas 0.4.1 (2025-11-30)
 
 * add `sparse` argument to `mkReTrms` (for controlling sparsity of effects model matrix J, in Z construction)
 
