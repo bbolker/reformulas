@@ -5,7 +5,7 @@
 #' @export
 #' @examples
 #' f <- ~ 1 + a  + b + (a | f) + (1 + a | g) + (a + b | h ) + (1 + a + b | i)
-#' reformulas_randint(f)
+#' randint(f)
 randint <- function(form) {
    fixed <- nobars(form)
    bars <- findbars(form) 

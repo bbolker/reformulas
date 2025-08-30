@@ -17,5 +17,5 @@ Remove all random slopes from a formula, while retaining random intercepts.
 }
 \examples{
 f <- ~ 1 + a  + b + (a | f) + (1 + a | g) + (a + b | h ) + (1 + a + b | i)
-reformulas_randint(f)
+randint(f)
 }
