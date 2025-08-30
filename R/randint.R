@@ -1,5 +1,4 @@
-#' Remove random slopes from a formula, while retaining random intercepts.
-#' See: https://github.com/bbolker/reformulas/issues/11#issuecomment-3221120343.
+#' Remove all random slopes from a formula, while retaining random intercepts.
 #'
 #' @param form A formula
 #' @return The new formula
@@ -8,10 +7,12 @@
 #' f <- ~ 1 + a  + b + (a | f) + (1 + a | g) + (a + b | h ) + (1 + a + b | i)
 #' reformulas_randint(f)
 randint <- function(form) {
-   fixed <- reformulas::nobars(form)
-   bars <- reformulas::findbars(form) 
+   fixed <- nobars(form)
+   bars <- findbars(form) 
    for (i in seq_along(bars)) {
         bars[[i]][[2]] <- 1
    }
-   reformulas::addForm(fixed, Reduce(reformulas::addForm0, bars))
+   ## was: addForm0(fixed, Reduce(addForm0, bars)), but
+   ##  this fails to brace-protect the first RE term
+   Reduce(addForm0, c(list(fixed), bars))
 }

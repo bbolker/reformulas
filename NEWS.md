@@ -1,5 +1,6 @@
 # reformulas 0.4.2
 
+* add `randint` function to remove random slopes from a formula (Raffaele Mancuso)
 * add `ord` to `mkReTrms` output, for re-ordering terms back to original formula order
 * unexported `head.*` methods, to avoid conflicts with other packages
 
