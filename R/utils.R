@@ -821,6 +821,7 @@ replaceForm <- function(term,target,repl) {
 ##' @examples
 ##' no_specials(findbars_x(~ 1 + s(x) + (f|g) + diag(x|y)))
 ##' no_specials(~us(f|g))
+##' no_specials(~us(f|g, extra_arg))
 ##' @export
 no_specials <- function(term, specials = c("|", "||", "s")) {
     if (is.list(term)) {
@@ -829,7 +830,7 @@ no_specials <- function(term, specials = c("|", "||", "s")) {
     for (ss in specials) {
         if (identical(head(term), as.name(ss))) return(term)
     }
-    if (length(term) == 3) stop("don't know what to do")
+    ## if (length(term) == 3) stop("don't know what to do")
     return(no_specials(term[[2]], specials))
 }
 
