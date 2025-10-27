@@ -478,6 +478,7 @@ findbars <- function(term) {
 ##' splitForm(~x+y+(f|g)+cs(1|g)+cs(a|b,stuff))  ## complex special
 ##' splitForm(~(((x+y))))               ## lots of parentheses
 ##' splitForm(~1+rr(f|g,n=2))
+##' splitForm(~1+diag(f|g,hom=FALSE))
 ##' splitForm(~1+s(x, bs = "tp"))
 ##'
 ##' @author Steve Walker
@@ -821,16 +822,18 @@ replaceForm <- function(term,target,repl) {
 ##' @examples
 ##' no_specials(findbars_x(~ 1 + s(x) + (f|g) + diag(x|y)))
 ##' no_specials(~us(f|g))
+##' no_specials(quote(diag(1 | f, hom = TRUE)))
+##' no_specials(~ diag(1 | f, hom = TRUE))
 ##' @export
-no_specials <- function(term, specials = c("|", "||", "s")) {
+no_specials <- function(term, specials = c("|", "||", "s"), ...) {
     if (is.list(term)) {
         return(lapply(term, no_specials))
     }
     for (ss in specials) {
         if (identical(head(term), as.name(ss))) return(term)
     }
-    if (length(term) == 3) stop("don't know what to do")
-    return(no_specials(term[[2]], specials))
+    term[-1] <- lapply(term[-1], no_specials, specials = specials)
+    term
 }
 
 
