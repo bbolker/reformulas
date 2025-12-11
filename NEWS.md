@@ -5,7 +5,7 @@
 * unexported `head.*` methods, to avoid conflicts with other packages
 * `no_specials()` drops extra arguments (e.g. `us(a|b, c)` returns (`(a|b)`)
 
-# reformulas 0.4.1 (2025-11-30)
+# reformulas 0.4.1 (2025-04-30)
 
 * add `sparse` argument to `mkReTrms` (for controlling sparsity of effects model matrix J, in Z construction)
 
