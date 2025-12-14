@@ -5,10 +5,6 @@
 ##' @param digits number of significant digits.
 ##' @param formatter formatting function.
 ##' @param ... additional arguments to formatter.
-##' @examples
-##' invisible(gt_load("test_data/models.rda"))
-##' format_sdvar(reStdDev = 1:3, use.c = c("Variance", "Std.Dev."))
-##' format_sdvar(attr(VarCorr(fm1)$cond$Subject, "stddev"))
 ##' @export
 ## FIXME: avoid repeating defaults
 format_sdvar <- function(reStdDev, use.c = "Std.Dev.", formatter=format,
@@ -112,7 +108,7 @@ format_corr.vcmat_homcs <- format_corr.vcmat_cs
 ##' \code{print()}ing and \code{show()}ing
 ##'
 ##' @title Format the 'VarCorr' Matrix of Random Effects
-##' @param varcor a \code{\link{VarCorr}} (-like) matrix with attributes.
+##' @param varcor a \code{VarCorr} (-like) matrix with attributes.
 ##' @param digits the number of significant digits for standard deviations and variances.
 ##' @param corr_digits the number of significant digits for correlations.
 ##' @param comp character vector of length one or two indicating which

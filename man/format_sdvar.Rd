@@ -38,8 +38,3 @@ get_sd(x, ...)
 \description{
 Format columns corresponding to std. dev. and/or variance.
 }
-\examples{
-invisible(gt_load("test_data/models.rda"))
-format_sdvar(reStdDev = 1:3, use.c = c("Variance", "Std.Dev."))
-format_sdvar(attr(VarCorr(fm1)$cond$Subject, "stddev"))
-}
