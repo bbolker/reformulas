@@ -1,6 +1,6 @@
-# reformulas 0.4.2.9000
+# reformulas 0.4.3
 
-* add `formatVC` and S3 methods such as `format_corr`, `get_sd`.
+* add machinery for pretty-printing random effects parameters of mixed models, especially allowing for various classes of structured covariances. This machinery is intended to be shared by `lme4` and `glmmTMB` (at least). These include `formatVC` and S3 methods such as `format_corr`, `get_sd`, which will migrate from `lme4` and/or `glmmTMB`.
 
 # reformulas 0.4.2
 
