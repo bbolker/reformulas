@@ -124,6 +124,7 @@ format_corr.vcmat_homcs <- format_corr.vcmat_cs
 ##' @param ... optional arguments for \code{formatter(*)} in addition
 ##' to the first (numeric vector) and \code{digits}.
 ##' @return a character matrix of formatted VarCorr entries from \code{varcor}.
+##' @export
 ##' @importFrom methods as
 formatVC <- function(varcor, digits = max(3, getOption("digits") - 2),
                      corr_digits = max(2, digits-2),
