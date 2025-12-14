@@ -1,3 +1,7 @@
+# reformulas 0.4.2.9000
+
+* add `formatVC` and S3 methods such as `format_corr`, `get_sd`.
+
 # reformulas 0.4.2
 
 * add `randint` function to remove random slopes from a formula (Raffaele Mancuso)
