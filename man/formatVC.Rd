@@ -16,7 +16,7 @@ formatVC(
 )
 }
 \arguments{
-\item{varcor}{a \code{\link{VarCorr}} (-like) matrix with attributes.}
+\item{varcor}{a VarCorr (-like) matrix with attributes. (See \code{?lme4::VarCorr})}
 
 \item{digits}{the number of significant digits for standard deviations and variances.}
 
