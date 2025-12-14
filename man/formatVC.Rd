@@ -16,6 +16,8 @@ formatVC(
 )
 }
 \arguments{
+\item{varcor}{a \code{VarCorr} (-like) matrix with attributes.}
+
 \item{digits}{the number of significant digits for standard deviations and variances.}
 
 \item{corr_digits}{the number of significant digits for correlations.}
