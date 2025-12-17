@@ -56,6 +56,9 @@ get_sd.vcmat_ar1 <- function(x, ...) {
 get_sd.vcmat_homcs <- get_sd.vcmat_ar1
 
 ##' @export
+get_sd.vcmat_homdiag <- get_sd.vcmat_ar1
+
+##' @export
 format_corr.default <- function(x, maxdim = Inf, digits=2, ...) {
   if (length(x)==0) return("")
   x <- attr(x, "correlation")
@@ -77,6 +80,9 @@ format_corr.vcmat_diag <- function(x, maxdim = Inf, digits=2, ...) {
   ## empty correlation
   return(matrix(""))
 }
+
+#' @export
+format_corr.vcmat_homdiag <- format_corr.vcmat_diag
 
 #' @export
 format_corr.vcmat_ar1 <- function(x, maxdim = Inf, digits=2, ...) {
