@@ -101,8 +101,12 @@ format_corr.vcmat_hetar1 <- format_corr.vcmat_ar1
 #' @export
 format_corr.vcmat_cs <- function(x, maxdim = Inf, digits=2, ...) {
   x <- attr(x, "correlation")
-  cc <- format(round(x[2,1], digits), nsmall = digits)
-  return(matrix(paste(cc, "(cs)")))
+  if(!is.na(x)){
+    cc <- format(round(x[2,1], digits), nsmall = digits)
+    return(matrix(paste(cc, "(cs)")))
+  } else {
+    return(matrix("(not stored)"))
+  }
 }
 
 #' @export
