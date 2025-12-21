@@ -1,12 +1,16 @@
 Package: reformulas
 Title: Machinery for Processing Random Effect Formulas
-Version: 0.4.3
+Version: 0.4.3.9000
 Authors@R: 
+   c(
     person(given = "Ben",
-           family = "Bolker",
-           role = c("aut", "cre"),
-           email = "bolker@mcmaster.ca",
-	   	           comment=c(ORCID="0000-0002-2127-0443"))
+	family = "Bolker",
+        role = c("aut", "cre"),
+        email = "bolker@mcmaster.ca",
+	comment=c(ORCID="0000-0002-2127-0443")),
+    person("Anna", "Ly", role = "ctb",
+       comment = c(ORCID = "0000-0002-0210-0342"))
+      )
 Description: Takes formulas including random-effects components (formatted as in 'lme4', 'glmmTMB', etc.) and processes them. Includes various helper functions.
 URL: https://github.com/bbolker/reformulas
 License: GPL-3

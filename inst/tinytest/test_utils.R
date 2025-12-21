@@ -13,8 +13,8 @@ efun(quote(1|f+g), "list(1 | f, 1 | g)")
 efun(quote(a+b|f+g+h*i), "list(a + b | f, a + b | g, a + b | h, a + b | i, a + b | h:i)")
 efun(quote(s(log(d), k = 4)), "list(s(log(d), k = 4))")
 efun(quote(s(log(d+1))), "list(s(log(d + 1)))")
-efun(quote(us(x,n=2)),
-     "list(fixedFormula = ~1, reTrmFormulas = list(x), reTrmAddArgs = list(us(n = 2)), reTrmClasses = \"us\")",
+efun(quote(us(x|f, n=2)),
+     "list(fixedFormula = 1, reTrmFormulas = list(x | f), reTrmAddArgs = list(us(n = 2)), reTrmClasses = \"us\")",
      FUN = splitForm)
 efun(quote((1 | a / (b*c))), "list((1 | c:b:a), (1 | c:a), (1 | b:a), (1 | a))")
 efun(quote((1 | a / (b+c))), "list((1 | c:a), (1 | b:a), (1 | a))")
@@ -61,3 +61,33 @@ ss <- ~(1 | cask:batch) + (1 | batch)
 expect_equal(replaceForm(ss,quote(cask:batch),quote(batch:cask)), ~(1 | batch:cask) + (1 | batch))
 expect_equal(replaceForm(ss, quote(`:`), quote(`%:%`)), ~(1 | cask %:% batch) + (1 | batch))
 
+## 
+cs <- function(x) scale(x, center=TRUE, scale = TRUE)
+formula <- Reaction ~ cs(Days) + (1|Subject)
+bb1 <- findbars_x(formula, specials = "cs", default.special = "us", 
+                  target = "|", expand_doublevert_method = "split")
+expect_equal(deparse(bb1), "list(us(1 | Subject))")
+
+bb2 <- findbars_x(Reaction ~ cs(1|Days) + (1|Subject), 
+                  specials = "cs", default.special = "us", 
+                  target = "|", expand_doublevert_method = "split")
+expect_equal(deparse(bb2), "list(cs(1 | Days), us(1 | Subject))")
+
+bb2b <- findbars_x(Reaction ~ cs(1+x|Days) + (1|Subject), 
+                  specials = "cs", default.special = "us", 
+                  target = "|", expand_doublevert_method = "split")
+expect_equal(deparse(bb2b), "list(cs(1 + x | Days), us(1 | Subject))")
+
+bb3 <- findbars_x(Reaction ~ cs(1+x||Days) + (1|Subject), 
+                  specials = "cs", default.special = "us", 
+                  target = "|", expand_doublevert_method = "split")
+
+
+expect_equal(splitForm(~1+s(x, bs = "tp"), specials = "s"),
+             list(
+               fixedFormula = ~1,
+               reTrmFormulas = list(quote(x)),
+               reTrmAddArgs = list(quote(s(bs = "tp"))),
+               reTrmClasses = "s"
+             )               
+             )

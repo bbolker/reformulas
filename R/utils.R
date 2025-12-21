@@ -337,7 +337,7 @@ head.name <- function(x, ...) { x }
 ##'    special type; we won't allow pathological cases like
 ##'    ((xx|gg)) ... can we detect them?
 ##' @examples
-##' splitForm(quote(us(x,n=2)))
+##' splitForm(quote(us(1|x,n=2)))
 ##' findbars_x(~ 1 + (x + y || g), expand_doublevert_method = "diag_special")
 ##' findbars_x(~ 1 + (x + y || g), expand_doublevert_method = "split")
 ##' findbars_x(~ 1 + (1 | f) + (1 | g))
@@ -379,14 +379,25 @@ findbars_x <- function(term,
     ## arguments down the recursive chain; (2) allows the top-level
     ## expandAllGrpVar() operation (which also handles cases where
     ## a naked term rather than a list is returned)
-    
-    fbx <- function(term) {
-        if (is.name(term) || !is.language(term)) return(NULL)
-        if (list(term[[1]]) %in% lapply(specials,as.name)) {
-            if (debug) cat("special: ",deparse(term),"\n")
-            return(term)
-        }
-        if (head(term) == as.name(target)) {  ## found x | g
+
+  has_bars <- function(term) {
+    identical(head(term[[2]]), quote(`|`)) ||
+      identical(head(term[[2]]), quote(`||`))
+  }
+  fbx <- function(term) {
+      if (is.name(term) || !is.language(term)) return(NULL)
+      ## term has a 'special' head *and* bar operator
+      
+      m <- match(list(term[[1]]), lapply(specials, as.name))
+      
+      if (!is.na(m) &&
+            (specials[m] == "s" || 
+               (target != "|" || has_bars(term)))) {
+        ## FIXME: special-purpose hack for s(), should be better designed!
+        if (debug) cat("special: ",deparse(term),"\n")
+      return(term)
+    }
+      if (head(term) == as.name(target)) {  ## found x | g
             if (debug) {
                 tt <- if (target == '|') "bar" else sprintf('"%s"', target)
                 cat(sprintf("%s term: %s\n", tt, deparse(term)))
@@ -478,7 +489,7 @@ findbars <- function(term) {
 ##' splitForm(~x+y+(f|g)+cs(1|g)+cs(a|b,stuff))  ## complex special
 ##' splitForm(~(((x+y))))               ## lots of parentheses
 ##' splitForm(~1+rr(f|g,n=2))
-##' splitForm(~1+s(x, bs = "tp"))
+##' splitForm(~1+s(x, bs = "tp"), specials = "s")
 ##'
 ##' @author Steve Walker
 ##' @export

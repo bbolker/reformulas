@@ -4,3 +4,4 @@ Makefile
 \.sh$
 misc/
 revdep/
+reverse/
