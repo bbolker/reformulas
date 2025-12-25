@@ -224,7 +224,7 @@ assemble_sdcor <- function(sdvar_out, corr_out, termnames) {
   termnames_out <- do.call(rbind, termnames_out)
   colnames(termnames_out) <- "Groups"
   
-  sdvar_out <- mapply(pad_blank, sdvar_out, max_rows, max_cols, SIMPLIFY = FALSE)
+  sdvar_out <- mapply(pad_blank, sdvar_out, max_rows, max_cols = 0, SIMPLIFY = FALSE)
   sdvar_out <- do.call(rbind, sdvar_out)
   
   corr_out <- mapply(pad_blank, corr_out, max_cols = max_cols, max_rows = max_rows, SIMPLIFY = FALSE)
