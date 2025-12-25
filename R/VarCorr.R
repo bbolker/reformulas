@@ -68,6 +68,7 @@ format_corr.default <- function(x, maxdim = Inf, digits=2, ...) {
   if (identical(c(x), NaN)) {
     cc <- matrix("(not stored)")
   } else {
+    x <- x[1:maxdim, 1:maxdim]
     cc <- format(round(x, digits), nsmall = digits)
     cc[upper.tri(cc, diag = TRUE)] <- ""  ## empty upper triangle
     if (extra_rows) cc <- rbind(cc, "...")
