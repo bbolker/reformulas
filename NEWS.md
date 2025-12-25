@@ -1,6 +1,7 @@
-# reformulas 0.4.3.9000
+# reformulas 0.4.3.1
 
-* `findbars_x` ignores terms of the form `<special>(...)` with no bar or double bar in the argument
+* `findbars_x` ignores terms of the form `<special>(...)` with no bar or double bar in the argument; `splitFormula()` takes special account of `s()` 
+* printing for covariance matrices with NA correlations (when `full_cor=FALSE`)
 
 # reformulas 0.4.3 (2025-12-17)
 
