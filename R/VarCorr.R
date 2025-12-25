@@ -72,7 +72,7 @@ format_corr.default <- function(x, maxdim = Inf, digits=2, ...) {
   if (corr_missing(x)) {
     cc <- matrix("(not stored)")
   } else {
-    x <- x[1:maxdim, 1:maxdim]
+    x <- x[1:newdim, 1:newdim]
     cc <- format(round(x, digits), nsmall = digits)
     cc[upper.tri(cc, diag = TRUE)] <- ""  ## empty upper triangle
     if (extra_rows) cc <- rbind(cc, "...")
