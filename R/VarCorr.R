@@ -58,6 +58,10 @@ get_sd.vcmat_homcs <- get_sd.vcmat_ar1
 ##' @export
 get_sd.vcmat_homdiag <- get_sd.vcmat_ar1
 
+corr_missing <- function(x) {
+  identical(c(x), NaN) || identical(c(x), NA_real_)
+}
+
 ##' @export
 format_corr.default <- function(x, maxdim = Inf, digits=2, ...) {
   if (length(x)==0) return("")
@@ -65,7 +69,7 @@ format_corr.default <- function(x, maxdim = Inf, digits=2, ...) {
   x <- as(x, "matrix")
   extra_rows <- (nrow(x) > maxdim)
   newdim <- min(maxdim, nrow(x))
-  if (identical(c(x), NaN)) {
+  if (corr_missing(x)) {
     cc <- matrix("(not stored)")
   } else {
     x <- x[1:maxdim, 1:maxdim]
@@ -85,15 +89,21 @@ format_corr.vcmat_diag <- function(x, maxdim = Inf, digits=2, ...) {
 #' @export
 format_corr.vcmat_homdiag <- format_corr.vcmat_diag
 
+format_corr.vcmat_onecorr <- function(x, maxdim = Inf, digits=2, ..., tag = "") {
+  x <- attr(x, "correlation")
+  cc <- if (corr_missing(x)) {
+          "(not stored)"
+        } else if (length(x) == 1) {
+          format(round(x, digits), nsmall = digits)
+        } else {
+          format(round(x[2,1], digits), nsmall = digits)
+        }
+  return(matrix(paste(cc, sprintf("(%s)", tag))))
+}
+
 #' @export
 format_corr.vcmat_ar1 <- function(x, maxdim = Inf, digits=2, ...) {
-  x <- attr(x, "correlation")
-  if (length(x)==1) {
-    cc <- format(round(x, digits), nsmall = digits)
-  } else {
-    cc <- format(round(x[2,1], digits), nsmall = digits)
-  }
-  return(matrix(paste(cc, "(ar1)")))
+  format_corr.vcmat_onecorr(x, maxdim = maxdim, digits = digits, ..., tag  = "ar1")
 }
 
 #' @export
@@ -101,13 +111,7 @@ format_corr.vcmat_hetar1 <- format_corr.vcmat_ar1
 
 #' @export
 format_corr.vcmat_cs <- function(x, maxdim = Inf, digits=2, ...) {
-  x <- attr(x, "correlation")
-  if(!is.na(x)){
-    cc <- format(round(x[2,1], digits), nsmall = digits)
-    return(matrix(paste(cc, "(cs)")))
-  } else {
-    return(matrix("(not stored)"))
-  }
+  format_corr.vcmat_onecorr(x, maxdim = maxdim, digits = digits, ..., tag  = "cs")
 }
 
 #' @export
