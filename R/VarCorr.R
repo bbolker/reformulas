@@ -89,7 +89,9 @@ format_corr.vcmat_diag <- function(x, maxdim = Inf, digits=2, ...) {
 #' @export
 format_corr.vcmat_homdiag <- format_corr.vcmat_diag
 
-format_corr.vcmat_onecorr <- function(x, maxdim = Inf, digits=2, ..., tag = "") {
+## generic formatting function: name *without* a dot so roxygen doesn't mistake it for
+## an S3 method
+format_corr_vcmat_onecorr <- function(x, maxdim = Inf, digits=2, ..., tag = "") {
   x <- attr(x, "correlation")
   cc <- if (corr_missing(x)) {
           "(not stored)"
@@ -103,7 +105,7 @@ format_corr.vcmat_onecorr <- function(x, maxdim = Inf, digits=2, ..., tag = "") 
 
 #' @export
 format_corr.vcmat_ar1 <- function(x, maxdim = Inf, digits=2, ...) {
-  format_corr.vcmat_onecorr(x, maxdim = maxdim, digits = digits, ..., tag  = "ar1")
+  format_corr_vcmat_onecorr(x, maxdim = maxdim, digits = digits, ..., tag  = "ar1")
 }
 
 #' @export
@@ -111,7 +113,7 @@ format_corr.vcmat_hetar1 <- format_corr.vcmat_ar1
 
 #' @export
 format_corr.vcmat_cs <- function(x, maxdim = Inf, digits=2, ...) {
-  format_corr.vcmat_onecorr(x, maxdim = maxdim, digits = digits, ..., tag  = "cs")
+  format_corr_vcmat_onecorr(x, maxdim = maxdim, digits = digits, ..., tag  = "cs")
 }
 
 #' @export
@@ -243,3 +245,29 @@ assemble_sdcor <- function(sdvar_out, corr_out, termnames) {
   return(res)
   
 }
+
+
+## not used (and don't want roxygen to get confused
+
+## once we decide what to do with this we can implement some nicer vcmat_* printing ...
+
+## print.vcmat <- function(x, ...) {
+##   class(x) <- class(x)[-1]  ## strip vcmat_* class attribute
+##   NextMethod(.Generic)
+## }
+
+## ##' @export
+## print.vcmat_us <- print.vcmat
+## ##' @export
+## print.vcmat_ar1 <- print.vcmat
+## ##' @export
+## print.vcmat_hetar1 <- print.vcmat
+## ##' @export
+## print.vcmat_diag <- print.vcmat
+## ##' @export
+## print.vcmat_homdiag <- print.vcmat
+## ##' @export
+## print.vcmat_cs <- print.vcmat
+## ##' @export
+## print.vcmat_homcs <- print.vcmat
+

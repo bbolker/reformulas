@@ -55,7 +55,7 @@ splitForm(~x+y+(1|(f/g)/h))             ## 'slash'; term
 splitForm(~x+y+(f|g)+cs(1|g)+cs(a|b,stuff))  ## complex special
 splitForm(~(((x+y))))               ## lots of parentheses
 splitForm(~1+rr(f|g,n=2))
-splitForm(~1+s(x, bs = "tp"))
+splitForm(~1+s(x, bs = "tp"), specials = "s")
 
 noSpecials(y~1+us(1|f))
 noSpecials(y~1+us(1|f),delete=FALSE)
