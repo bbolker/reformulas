@@ -1,7 +1,7 @@
 ## backward compat (copied from lme4)
 if ((getRversion()) < "3.2.1") {
     lengths <- function (x, use.names = TRUE) vapply(x, length, 1L, USE.NAMES = use.names)
-
+}
 
 if (getRversion() < "4.0.0") {
     deparse1 <- function (expr, collapse = " ", width.cutoff = 500L, ...) {
