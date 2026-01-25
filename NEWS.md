@@ -1,3 +1,7 @@
+# reformulas 0.4.4
+
+* machinery works with `Formula` objects where `length(length(f))` > 1
+
 # reformulas 0.4.3.1 (2026-01-08)
 
 * `findbars_x` ignores terms of the form `<special>(...)` with no bar or double bar in the argument; `splitFormula()` takes special account of `s()` 

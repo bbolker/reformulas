@@ -1,6 +1,6 @@
 Package: reformulas
 Title: Machinery for Processing Random Effect Formulas
-Version: 0.4.3.1
+Version: 0.4.4
 Authors@R: 
    c(
     person(given = "Ben",
@@ -17,11 +17,7 @@ License: GPL-3
 Encoding: UTF-8
 Imports: stats, methods, Matrix, Rdpack
 RdMacros: Rdpack
-Suggests: 
-    lme4,
-    tinytest,
-    glmmTMB,
-    testthat (>= 3.0.0)
+Suggests: lme4, tinytest, glmmTMB, Formula
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Config/testthat/edition: 3

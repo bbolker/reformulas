@@ -9,6 +9,9 @@ if (getRversion() < "4.0.0") {
     }
 }
 
+## unclass term to avoid trouble from Formula objects where length(length(.)) > 1 ...
+safe_length <- function(x) length(unclass(x))
+
 ## FIXME: refactor! lmer::lFormula calls expandDoubleVerts(),
 ##  but also calls findbars -> findbars_x -> expandDoubleVert
 ## maybe expandDoubleVerts
@@ -78,8 +81,8 @@ expandDoubleVerts <- function(term)
             return( expandDoubleVert(term) )
         ## else :
         term[[2]] <- expandDoubleVerts(term[[2]])
-        if (length(term) != 2) {
-            if(length(term) == 3)
+        if (safe_length(term) != 2) {
+            if(safe_length(term) == 3)
                 term[[3]] <- expandDoubleVerts(term[[3]])
         }
     }
@@ -94,8 +97,8 @@ expandDoubleVerts <- function(term)
 #' @return a \code{language} object
 #' @export
 RHSForm <- function(form, as.form=FALSE) {
-    if (!as.form) return(form[[length(form)]])
-    if (length(form)==2) return(form)  ## already RHS-only
+    if (!as.form) return(form[[safe_length(form)]])
+    if (safe_length(form)==2) return(form)  ## already RHS-only
     ## by operating on RHS in situ rather than making a new formula
     ## object, we avoid messing up existing attributes/environments etc.
     form[[2]] <- NULL
@@ -122,7 +125,7 @@ RHSForm <- function(form, as.form=FALSE) {
 #' print(f)
 #' @export
 `RHSForm<-` <- function(formula,value) {
-    formula[[length(formula)]] <- value
+    formula[[safe_length(formula)]] <- value
     formula
 }
 
@@ -144,7 +147,7 @@ sumTerms <- function(termList) {
 #' reOnly(~ 1 + x + y + (1|f) + (1|g))
 #' @export
 reOnly <- function(f, response=FALSE, bracket=TRUE, doublevert_split = TRUE) {
-    flen <- length(f)
+    flen <- safe_length(f)
     f2 <- f[[2]]
     if (bracket) {
         xdv <- if (doublevert_split) "split" else "diag_special"
@@ -191,7 +194,7 @@ addForm0 <- function(f1,f2) {
     if (!identical(head(f2),tilde)) {
         f2 <- makeOp(f2,tilde)
     }
-    if (length(f2)==3) warning("discarding LHS of second argument")
+    if (safe_length(f2)==3) warning("discarding LHS of second argument")
     RHSForm(f1) <- makeOp(RHSForm(f1),RHSForm(f2),quote(`+`))
     return(f1)
 }
@@ -283,8 +286,8 @@ expandAllGrpVar <- function(bb) {
 }
 
 esfun <- function(x) {
-    if (length(x)==1 || !anySpecial(x, "|")) return(x)
-    if (length(x)==2) {
+    if (safe_length(x)==1 || !anySpecial(x, "|")) return(x)
+    if (safe_length(x)==2) {
         ## if (head(x)==as.name("(")) {
         ##     return(makeOp(esfun(x[[2]]), quote(`(`)))
         ## }
@@ -292,7 +295,7 @@ esfun <- function(x) {
         ## return diag(...) + diag(...) + ...
         return(lapply(esfun(x[[2]]),  makeOp, y=x[[1]]))
     }
-    if (length(x)==3) {
+    if (safe_length(x)==3) {
         ## binary operator
         if (x[[1]]==quote(`|`)) {
             return(lapply(expandGrpVar(x[[3]]),
@@ -362,8 +365,9 @@ findbars_x <- function(term,
 
     expand_doublevert_method <- match.arg(expand_doublevert_method)
 
-    ## drop RHS from two-sided formula
-    if (length(term) == 3 && identical(term[[1]], quote(`~`))) {
+  ## drop RHS from two-sided formula
+
+    if (safe_length(term) == 3 && identical(term[[1]], quote(`~`))) {
         term <- RHSForm(term, as.form = TRUE)
     }
     ds <- if (is.null(default.special)) {
@@ -419,7 +423,8 @@ findbars_x <- function(term,
             return(fbx(term[[2]]))
         }
         stopifnot(is.call(term))
-        if (length(term) == 2) {
+        ## see note above about length()
+        if (safe_length(term) == 2) {
             ## unary operator, decompose argument
             if (debug) cat("unary operator:",deparse(term[[2]]),"\n")
             return(fbx(term[[2]]))
@@ -595,7 +600,7 @@ splitForm <- function(formula,
 ##' @keywords internal
 noSpecials <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClasses()) {
     nospec <- noSpecials_(term, delete=delete, debug=debug, specials = specials)
-    empty_RHS <- inherits(term, "formula") && length(term) == 3 && (is.symbol(nospec) || !identical(nospec[[1]], quote(`~`)))
+    empty_RHS <- inherits(term, "formula") && safe_length(term) == 3 && (is.symbol(nospec) || !identical(nospec[[1]], quote(`~`)))
     if (empty_RHS) {
         ## called with two-sided RE-only formula:
         ##    construct response~1 formula
@@ -612,7 +617,7 @@ noSpecials <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClass
 noSpecials_ <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClasses()) {
     if (debug) print(term)
     if (!anySpecial(term, specials)) return(term)
-    if (length(term)==1) return(term)  ## 'naked' specials
+    if (safe_length(term)==1) return(term)  ## 'naked' specials
     if (isSpecial(term, specials)) {
         if(delete) {
             return(NULL)
@@ -622,7 +627,7 @@ noSpecials_ <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClas
     } else {
         if (debug) print("not special")
         nb2 <- noSpecials_(term[[2]], delete=delete, debug=debug, specials = specials)
-        nb3 <- if (length(term)==3) {
+        nb3 <- if (safe_length(term)==3) {
                    noSpecials_(term[[3]], delete=delete, debug=debug, specials = specials)
                } else NULL
         if (is.null(nb2)) {
@@ -630,7 +635,7 @@ noSpecials_ <- function(term, delete=TRUE, debug=FALSE, specials = findReTrmClas
             return(nb3)
         } else if (is.null(nb3)) {
             if (debug) cat("term[[3]] NULL\n")
-            if (length(term)==2 && identical(term[[1]], quote(`~`))) { ## special case for one-sided formula
+            if (safe_length(term)==2 && identical(term[[1]], quote(`~`))) { ## special case for one-sided formula
                 if (debug) cat("one-sided formula special case\n")
                 term[[2]] <- nb2
                 return(term)
@@ -680,7 +685,7 @@ anySpecial <- function(term, specials=findReTrmClasses(), fast = FALSE) {
     if (fast) return(any(specials %in% all.names(term)))
     has_s <- FALSE
     as2 <- function(expr) {
-        if (length(expr) == 1) return(NULL)  ## we've hit bottom
+        if (safe_length(expr) == 1) return(NULL)  ## we've hit bottom
         for (ss in specials) {
             if (identical(expr[[1]], as.name(ss))) {
                 assign("has_s", TRUE, environment(as2))
@@ -699,7 +704,7 @@ anySpecial <- function(term, specials=findReTrmClasses(), fast = FALSE) {
 ##
 
 rfun <- function(expr) {
-    if (length(expr) == 1) return(FALSE)  ## we've hit bottom
+    if (safe_length(expr) == 1) return(FALSE)  ## we've hit bottom
     if (identical(expr[[1]], quote(s))) return(TRUE)
     for (el in as.list(expr[-1])) {
         if (rfun(el)) return(TRUE)
@@ -722,7 +727,7 @@ rfun <- function(expr) {
 ##' @keywords internal
 inForm <- function(form, value) {
     if (any(sapply(form,identical,value))) return(TRUE)
-    if (all(sapply(form,length)==1)) return(FALSE)
+    if (all(sapply(form,safe_length)==1)) return(FALSE)
     return(any(vapply(form,inForm,value,FUN.VALUE=logical(1))))
 }
 
@@ -744,7 +749,7 @@ extractForm <- function(term,value) {
     if (identical(head(term),value)) {
         return(list(term))
     }
-    if (length(term) == 2) {
+    if (safe_length(term) == 2) {
         return(extractForm(term[[2]],value))
     }
     return(c(extractForm(term[[2]],value),
@@ -765,9 +770,9 @@ dropHead <- function(term,value) {
     if (identical(head(term),value)) {
         return(term[[2]])
     }
-    if (length(term) == 2) {
+    if (safe_length(term) == 2) {
         return(dropHead(term[[2]],value))
-    } else  if (length(term) == 3) {
+    } else  if (safe_length(term) == 3) {
         term[[2]] <- dropHead(term[[2]],value)
         term[[3]] <- dropHead(term[[3]],value)
         return(term)
@@ -790,12 +795,12 @@ dropHead <- function(term,value) {
 drop.special <- function(x, value=quote(offset), preserve = NULL) {
   k <- 0
   proc <- function(x) {
-    if (length(x) == 1) return(x)
+    if (safe_length(x) == 1) return(x)
     if (x[[1]] == value && !((k <<- k+1) %in% preserve)) return(x[[1]])
     replace(x, -1, lapply(x[-1], proc))
   }
   ## handle 1- and 2-sided formulas
-  if (length(x)==2) {
+  if (safe_length(x)==2) {
       newform <- substitute(~ . -x, list(x=value))
   } else {
       newform <- substitute(. ~ . - x, list(x=value))
@@ -815,7 +820,7 @@ drop.special <- function(x, value=quote(offset), preserve = NULL) {
 replaceForm <- function(term,target,repl) {
     if (identical(term,target)) return(repl)
     if (!inForm(term,target)) return(term)
-    if (length(term) == 2) {
+    if (safe_length(term) == 2) {
         return(substitute(OP(x),list(OP=replaceForm(term[[1]],target,repl),
                                      x=replaceForm(term[[2]],target,repl))))
     }
@@ -884,7 +889,7 @@ sub_specials <- function (term,
             ## (fragile re: order??)
         }
     }
-    for (j in 2:length(term)) {
+    for (j in 2:safe_length(term)) {
         term[[j]] <- sub_specials(term[[j]],
                                   specials = specials,
                                   keep_args = keep_args)

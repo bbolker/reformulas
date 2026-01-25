@@ -1,3 +1,4 @@
+library(reformulas)
 
 varcor_us <- structure(
   list(
@@ -96,7 +97,7 @@ class(glmmTMB.varcor_ar1) <- NULL
 attr(glmmTMB.varcor_ar1$Subject, "blockCode") <- setNames(3, "ar1")
 
 
-test_that("formatVC printing works for lme4", {
+## test_that("formatVC printing works for lme4", {
   ## linear mixed models
   expected_summary_us <- matrix(
     c("Subject", "(Intercept)", "23.78", "", "",
@@ -151,7 +152,6 @@ test_that("formatVC printing works for lme4", {
   expect_equal(formatVC(glmmTMB.varcor_cs), expected_summary_cs)
   expect_equal(formatVC(glmmTMB.varcor_diag), expected_summary_diag)
   expect_equal(formatVC(glmmTMB.varcor_ar1), expected_summary_ar1)
-})
 
 # TODO: should add tests for glmms once we have an idea how we want to 
 # print them
