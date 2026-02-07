@@ -1,4 +1,8 @@
-# reformulas 0.4.4
+# reformulas 0.4.4.9000
+
+* removed `Rdpack` dependency
+
+# reformulas 0.4.4 (2026-02-02)
 
 * machinery works with `Formula` objects where `length(length(f))` > 1
 

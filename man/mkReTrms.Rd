@@ -87,7 +87,9 @@ ss <- splitForm(form2)
 ss$reTrmFormulas[rterms2$ord]
 }
 \references{
-\insertRef{lme4}{reformulas})
+Bates D, Mächler M, Bolker B, Walker S (2015). "Fitting Linear
+Mixed-Effects Models Using lme4." \emph{Journal of Statistical
+Software}, 67(1), 1-48. \doi{10.18637/jss.v067.i01}
 }
 \seealso{
 Other utilities: 
