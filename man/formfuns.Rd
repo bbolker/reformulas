@@ -24,7 +24,13 @@ RHSForm(formula) <- value
 
 sumTerms(termList)
 
-reOnly(f, response = FALSE, bracket = TRUE, doublevert_split = TRUE)
+reOnly(
+  f,
+  response = FALSE,
+  bracket = TRUE,
+  doublevert_split = TRUE,
+  specials = character(0)
+)
 
 makeOp(x, y, op = NULL)
 
@@ -72,6 +78,8 @@ replaceForm(term, target, repl)
 
 \item{doublevert_split}{(logical) TRUE for lme4 back-compatibility; FALSE to make double vertical bars into \code{diag()} eterms}
 
+\item{specials}{list of special terms}
+
 \item{x}{formula}
 
 \item{y}{a formula term (or an operator)}
@@ -87,8 +95,6 @@ replaceForm(term, target, repl)
 \item{bb}{a list of naked grouping variables, i.e. 1 | f}
 
 \item{debug}{(logical) debug?}
-
-\item{specials}{list of special terms}
 
 \item{default.special}{character: special to use for parenthesized terms - i.e. random effects terms with unspecified structure}
 
