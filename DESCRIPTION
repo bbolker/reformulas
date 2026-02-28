@@ -15,8 +15,7 @@ Description: Takes formulas including random-effects components (formatted as in
 URL: https://github.com/bbolker/reformulas
 License: GPL-3
 Encoding: UTF-8
-Imports: stats, methods, Matrix, Rdpack
-RdMacros: Rdpack
+Imports: stats, methods, Matrix
 Suggests: lme4, tinytest, glmmTMB, Formula
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3

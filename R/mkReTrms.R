@@ -39,9 +39,11 @@
 ##' @importFrom Matrix sparseMatrix drop0
 ## (no methods found in package 'Matrix' for rbind ... ???)
 ##' @importMethodsFrom Matrix coerce t diag
-##' @importFrom Rdpack reprompt
 ##' @family utilities
-##' @references \insertRef{lme4}{reformulas})
+##' @references
+##' Bates D, Mächler M, Bolker B, Walker S (2015). "Fitting Linear
+##' Mixed-Effects Models Using lme4." \emph{Journal of Statistical
+##' Software}, 67(1), 1-48. \doi{10.18637/jss.v067.i01}
 ##' @export
 ##' @examples
 ##' ## (silly/impractical formula, for illustration only)
