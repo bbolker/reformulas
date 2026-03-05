@@ -1,4 +1,6 @@
-expect_equal(reOnly(~ 1 + x + y + (1|f) + (1|g)), ~(us(1 | f)) + (us(1 | g)))
+expect_equal(reOnly(~ 1 + x + y + (1|f) + (1|g)), ~(1 | f) + (1 | g))
+expect_equal(reOnly(~ 1 + x + y + (1|f) + (1|g),
+                    default.special = "us"), ~(us(1 | f)) + (us(1 | g)))
 expect_equal(addForm0(y~x,~1), y ~ x+1)
 expect_equal(addForm0(~x,~y), ~x+y)
 ff <- findbars_x(y~1+(x|f/g))

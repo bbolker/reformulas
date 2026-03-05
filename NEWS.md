@@ -1,6 +1,6 @@
 # reformulas 0.4.5
 
-* improvements to `reOnly()` (for `lme4` structured covariances)
+* improvements to `reOnly()` (for `lme4` structured covariances) (takes `specials` and `default.special` arguments, `default.special` defaults to NULL)
 * removed `Rdpack` dependency
 
 # reformulas 0.4.4 (2026-02-02)

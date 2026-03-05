@@ -29,7 +29,8 @@ reOnly(
   response = FALSE,
   bracket = TRUE,
   doublevert_split = TRUE,
-  specials = character(0)
+  specials = character(0),
+  default.special = NULL
 )
 
 makeOp(x, y, op = NULL)
@@ -80,6 +81,8 @@ replaceForm(term, target, repl)
 
 \item{specials}{list of special terms}
 
+\item{default.special}{character: special to use for parenthesized terms - i.e. random effects terms with unspecified structure}
+
 \item{x}{formula}
 
 \item{y}{a formula term (or an operator)}
@@ -95,8 +98,6 @@ replaceForm(term, target, repl)
 \item{bb}{a list of naked grouping variables, i.e. 1 | f}
 
 \item{debug}{(logical) debug?}
-
-\item{default.special}{character: special to use for parenthesized terms - i.e. random effects terms with unspecified structure}
 
 \item{expand_doublevert_method}{method for handling \code{||} operator: split into separate terms or replace by \code{diag}? Inherited from \emph{previous call where it was specified}.
 \enumerate{
