@@ -142,18 +142,19 @@ sumTerms <- function(termList) {
 #' @param response include response variable?
 #' @param bracket bracket-protect terms?
 #' @param doublevert_split (logical) TRUE for lme4 back-compatibility; FALSE to make double vertical bars into \code{diag()} eterms
-#' @param specials list of special terms
+#' @inheritParams findbars_x
 #' @rdname formfuns
 #' @examples
 #' reOnly(~ 1 + x + y + (1|f) + (1|g))
 #' @export
-reOnly <- function(f, response=FALSE, bracket=TRUE, doublevert_split = TRUE, specials=character(0)) {
+reOnly <- function(f, response=FALSE, bracket=TRUE, doublevert_split = TRUE, specials=character(0), default.special = NULL) {
     ee <- environment(f)
     flen <- safe_length(f)
     f2 <- f[[2]]
     if (bracket) {
         xdv <- if (doublevert_split) "split" else "diag_special"
-        fb <- findbars_x(f, expand_doublevert_method = xdv, specials = specials)
+        fb <- findbars_x(f, expand_doublevert_method = xdv,
+                         specials = specials, default.special = default.special)
         f <- lapply(fb, makeOp, quote(`(`)) ## bracket-protect terms
     }
     f <- sumTerms(f)
@@ -375,7 +376,7 @@ findbars_x <- function(term,
     if (safe_length(term) == 3 && identical(term[[1]], quote(`~`))) {
         term <- RHSForm(term, as.form = TRUE)
     }
-    ds <- if (is.null(default.special)) {
+    ds <- if (is.null(default.special) || default.special == "") {
               NULL
           } else {
               ## convert default special char to symbol (less ugly way?)
