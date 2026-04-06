@@ -991,3 +991,20 @@ subnms <- function(form, nms) {
     }
     sbnm(form)
 }
+
+#' get grouping variable symbols/names
+#' @param formula a formula
+#' @param return_val return character string or raw symbol?
+#' @examples
+#' form <- Reaction ~ Days + (Days | group / Subject)
+#' get_grpvars(form)
+#' get_grpvars(form, return_val = "symbol")
+#' @export
+get_grpvars <- function(formula, return_val = c("char", "symbol")) {
+  return_val <- match.arg(return_val)
+  ff <- reformulas::findbars_x(formula)
+  ff2 <- lapply(ff, "[[", 2) ## strip parens/special names
+  ff3 <- lapply(ff2, "[[", 3) ## get argument after |
+  if (return_val == "symbol") return(ff3)
+  vapply(ff3, deparse1, FUN.VALUE = "")
+}

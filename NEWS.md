@@ -1,5 +1,6 @@
 # reformulas 0.4.5
 
+* added `get_grpvars` to extract names (or symbols) of grouping variables from a formula
 * improvements to `reOnly()` (for `lme4` structured covariances)
 * removed `Rdpack` dependency
 
