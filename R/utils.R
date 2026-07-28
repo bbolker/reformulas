@@ -169,6 +169,29 @@ reOnly <- function(f, response=FALSE, bracket=TRUE, doublevert_split = TRUE, spe
     return(form)
 }
 
+#' construct a null-model (intercept + random-effects-only) formula
+#'
+#' Given a two-sided mixed-model formula, construct a formula with the
+#' same response and random-effects terms (as found by \code{\link{findbars}}),
+#' but with the fixed-effect part reduced to an intercept only. Handles
+#' the case of no random-effects terms gracefully.
+#' @param formula a two-sided formula, e.g. \code{y ~ x + (1|g)}
+#' @noRd
+null_model <- function(formula) {
+    if (length(formula) < 3) {
+        stop("formula must be two-sided (have a response)")
+    }
+    response <- formula[[2]]
+    bars <- findbars(formula)
+    if (is.null(bars)) {
+        return(as.formula(bquote(.(response) ~ 1),
+                           env = environment(formula)))
+    }
+    rhs <- sumTerms(lapply(bars, makeOp, quote(`(`)))
+    as.formula(bquote(.(response) ~ 1 + .(rhs)),
+               env = environment(formula))
+}
+
 #' combine unary or binary operator + arguments (sugar for 'substitute')
 #' @param x a formula term
 #' @param y a formula term (or an operator)
