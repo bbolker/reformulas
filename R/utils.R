@@ -336,6 +336,13 @@ esfun <- function(x) {
             ##  op=x[[1]]), names(x)))
         }
     }
+  
+    # Addition to make sure vcov functions with more than 2 parameters work
+    if(safe_length(x) > 3){
+      # No need for any special operations, just return x as is
+      return(x)
+    }
+  
 } ## esfun def.
 
 
