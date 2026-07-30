@@ -84,6 +84,15 @@ bb3 <- findbars_x(Reaction ~ cs(1+x||Days) + (1|Subject),
                   specials = "cs", default.special = "us", 
                   target = "|", expand_doublevert_method = "split")
 
+# Test that findbars_x works for vcov functions with over 2 arguments
+bb4 <- findbars_x(Reaction ~ cs(0 + x | Days,
+                                hom = TRUE,
+                                new_par = 'val',
+                                another_par = 42),
+                  specials = "cs", default.special = "us",
+                  target = "|", expand_doublevert_method = "split")
+expect_equal(deparse(bb4), 
+             "list(cs(0 + x | Days, hom = TRUE, new_par = \"val\", another_par = 42))")
 
 expect_equal(splitForm(~1+s(x, bs = "tp"), specials = "s"),
              list(

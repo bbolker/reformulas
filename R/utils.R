@@ -315,7 +315,8 @@ expandAllGrpVar <- function(bb) {
 }
 
 esfun <- function(x) {
-    if (safe_length(x)==1 || !anySpecial(x, "|")) return(x)
+    # Situations where nothing needs to be done and input can be returned as is
+    if (safe_length(x)==1 || safe_length(x) > 3 || !anySpecial(x, "|")) return(x)
     if (safe_length(x)==2) {
         ## if (head(x)==as.name("(")) {
         ##     return(makeOp(esfun(x[[2]]), quote(`(`)))
