@@ -315,7 +315,8 @@ expandAllGrpVar <- function(bb) {
 }
 
 esfun <- function(x) {
-    if (safe_length(x)==1 || !anySpecial(x, "|")) return(x)
+    # Situations where nothing needs to be done and input can be returned as is
+    if (safe_length(x)==1 || safe_length(x) > 3 || !anySpecial(x, "|")) return(x)
     if (safe_length(x)==2) {
         ## if (head(x)==as.name("(")) {
         ##     return(makeOp(esfun(x[[2]]), quote(`(`)))
@@ -336,13 +337,6 @@ esfun <- function(x) {
             ##  op=x[[1]]), names(x)))
         }
     }
-  
-    # Addition to make sure vcov functions with more than 2 parameters work
-    if(safe_length(x) > 3){
-      # No need for any special operations, just return x as is
-      return(x)
-    }
-  
 } ## esfun def.
 
 
